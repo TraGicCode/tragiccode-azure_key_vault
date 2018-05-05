@@ -1,0 +1,67 @@
+{
+  "name": "tragiccode-azure_key_vault",
+  "version": "0.1.0",
+  "author": "tragiccode",
+  "summary": "The azure_key_vault module allows you to easily fetch secrets securely within your puppet manifests.",
+  "license": "Apache-2.0",
+  "source": "https://github.com/TraGicCode/tragiccode-azure_key_vault",
+  "issues_url": "https://github.com/TraGicCode/tragiccode-azure_key_vault/issues",
+  "dependencies": [
+
+  ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "OracleLinux",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Scientific",
+      "operatingsystemrelease": [
+        "7"
+      ]
+    },
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "16.04"
+      ]
+    },
+    {
+      "operatingsystem": "windows",
+      "operatingsystemrelease": [
+        "2008 R2",
+        "2012 R2",
+        "2016"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.7.0 < 6.0.0"
+    }
+  ],
+  "pdk-version": "1.5.0",
+  "template-url": "file://C:/Program Files/Puppet Labs/DevelopmentKit/share/cache/pdk-templates.git",
+  "template-ref": "1.5.0-0-gd1b3eca"
+}

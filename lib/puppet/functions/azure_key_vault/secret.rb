@@ -20,7 +20,8 @@ Puppet::Functions.create_function(:'azure_key_vault::secret') do
     Puppet.info("Generated Secrets Url: #{secret_url}")
 
     # Get MSI's Access-Token
-    get_access_token = open("http://169.254.169.254/metadata/identity/oauth2/token?api-version=#{api_versions_hash['metadata_api_version']}&resource=https%3A%2F%2Fvault.azure.net", 'Metadata' => 'true')
+    get_access_token = open("http://169.254.169.254/metadata/identity/oauth2/token?api-version=#{api_versions_hash['metadata_api_version']}&resource=https%3A%2F%2Fvault.azure.net",
+                            'Metadata' => 'true')
     access_token = JSON.parse(get_access_token.string)['access_token']
     get_secret = open(secret_url, 'Authorization' => "Bearer #{access_token}")
     secret_value = JSON.parse(get_secret.string)['value']

@@ -3,4 +3,8 @@
 ---
 fixtures:
   forge_modules:
-#     stdlib: "puppetlabs/stdlib"
+  repositories:
+  # Should go away when Attempting to work around PDK-1137(https://tickets.puppetlabs.com/browse/PDK-1137)
+  # is resolved.
+  symlinks:
+    azure_key_vault: '#{source_dir}'

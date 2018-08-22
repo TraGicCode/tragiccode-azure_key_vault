@@ -7,5 +7,8 @@ Gemfile:
         ref: '20ee04ba1234e9e83eb2ffb5056e23d641c7a018'
         condition: "Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.2.2')"
 
+spec/spec_helper.rb:
+  mock_with: ':rspec'
+
 .gitlab-ci.yml:
   delete: true

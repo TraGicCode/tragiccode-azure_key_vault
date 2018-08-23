@@ -1,6 +1,6 @@
 {
   "name": "tragiccode-azure_key_vault",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "tragiccode",
   "summary": "The azure_key_vault module allows you to easily fetch secrets securely within your puppet manifests.",
   "license": "Apache-2.0",
@@ -61,7 +61,7 @@
       "version_requirement": ">= 4.7.0 < 6.0.0"
     }
   ],
-  "pdk-version": "1.5.0",
+  "pdk-version": "1.7.0",
   "template-url": "file://C:/Program Files/Puppet Labs/DevelopmentKit/share/cache/pdk-templates.git",
-  "template-ref": "1.5.0-0-gd1b3eca"
+  "template-ref": "1.7.0-0-g57412ed"
 }

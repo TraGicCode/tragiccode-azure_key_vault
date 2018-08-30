@@ -136,37 +136,7 @@ $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-pass
 
 ## Reference
 
-### Functions
-
-Parameters are optional unless otherwise noted.
-
-### `azure_key_vault::secret`
-
-Pulls secrets from Azure's key vault.
-
-#### `vault_name`
-
-*Required.*
-
-Specifies the name of a vault in your subscription you want to get secrets from.
-
-#### `secret_name`
-
-*Required.*
-
-The name of the secret you want to retrieve.
-
-#### `api_versions_hash`
-
-*Required.*
-
-The version of Azure's APIs you want to utilize.  This allows you to pin and control utilizing newer or older versions of the api.
-
-#### `secret_version`
-
-Specifices the version of the secret you want to retrieve.  By default the latest version is always retrieved.  This allows you to pin and control utilizing new or older versions of a secret.
-
-Default: ''.
+See [REFERENCE.md](REFERENCE.md)
 
 ## Development
 

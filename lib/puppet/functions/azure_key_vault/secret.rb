@@ -1,7 +1,13 @@
 require 'open-uri'
 require 'json'
 
+# Retrieves secrets from Azure's Key Vault.
 Puppet::Functions.create_function(:'azure_key_vault::secret') do
+  # @param vault_name Name of the vault in your Azure subcription.
+  # @param secret_name Name of the secret to be retrieved.
+  # @param api_versions_hash A Hash of the exact versions of the metadata_api_version and vault_api_version to use.
+  # @param secret_version The version of the secret you want to retrieve.  This parameter is optional and if not passed the default behavior is to retrieve the latest version.
+  # @return [Sensitive[String]] Returns the secret as a String wrapped with the Sensitive data type.
   dispatch :secret do
     required_param 'String', :vault_name
     required_param 'String', :secret_name

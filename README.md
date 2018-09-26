@@ -117,7 +117,7 @@ file { 'C:\\DataForApplication.secret':
   content   => azure_key_vault::secret('production-vault', 'important-secret', {
     metadata_api_version => '2018-02-01',
     vault_api_version    => '2016-10-01',
-  })
+  }),
   ensure    => file,
 }
 ```

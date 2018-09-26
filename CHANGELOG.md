@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.2.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/0.2.0) (2018-08-22)
+## [0.3.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/0.3.0) (2018-09-26)
+
+[Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/0.2.0...0.3.0)
+
+### Added
+
+- Specify Puppet 6 support [\#8](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/8) ([turbodog](https://github.com/turbodog))
+
+### Fixed
+
+- Change log level from info to debug [\#10](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/10) ([TraGicCode](https://github.com/TraGicCode))
+- Add missing comma in readme.md [\#9](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/9) ([TraGicCode](https://github.com/TraGicCode))
+
+## [0.2.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/0.2.0) (2018-08-23)
 
 [Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/0.1.0...0.2.0)
 

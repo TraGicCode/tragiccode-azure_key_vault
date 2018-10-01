@@ -11,7 +11,7 @@ module TragicCode
     end
     def self.get_secret(vault_name, secret_name, vault_api_version, metadata_api_version, secret_version)
       version_parameter = secret_version.empty? ? secret_version : "/#{secret_version}"
-      uri = "https://#{vault_name}.vault.azure.net/secrets/#{secret_name}#{version_parameter}?api-version=#{api_version}"
+      uri = "https://#{vault_name}.vault.azure.net/secrets/#{secret_name}#{version_parameter}?api-version=#{vault_api_version}"
       Puppet.debug("Generated Secrets Url: #{uri}")
       secret = open(uri, 'Authorization' => "Bearer #{get_access_token(metadata_api_version)}")
       JSON.parse(secret.string)['value']

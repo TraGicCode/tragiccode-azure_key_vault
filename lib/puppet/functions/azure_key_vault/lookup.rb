@@ -18,7 +18,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
         ''
       )
     rescue => e
-      Puppet.warn(e)
+      Puppet.warning(e)
       secret_value = nil
     end
     if secret_value.nil?

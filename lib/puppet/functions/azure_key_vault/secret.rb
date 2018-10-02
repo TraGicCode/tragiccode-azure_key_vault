@@ -19,13 +19,14 @@ Puppet::Functions.create_function(:'azure_key_vault::secret') do
     Puppet.debug("secret_name: #{secret_name}")
     Puppet.debug("secret_version: #{secret_version}")
     Puppet.debug("metadata_api_version: #{api_versions_hash['metadata_api_version']}")
-    Puppet.debug("api_version_vault: #{api_versions_hash['vault_api_version']}")
+    Puppet.debug("vault_api_version: #{api_versions_hash['vault_api_version']}")
+    access_token = TragicCode::Azure.get_access_token(api_versions_hash['metadata_api_version'])
     secret_value = TragicCode::Azure.get_secret(
       vault_name,
       secret_name,
       api_versions_hash['vault_api_version'],
-      api_versions_hash['metadata_api_version'],
-      secret_version
+      access_token,
+      secret_version,
     )
     Puppet::Pops::Types::PSensitiveType::Sensitive.new(secret_value)
   end

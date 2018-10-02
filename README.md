@@ -16,7 +16,8 @@
 
 ## Description
 
-Secure secrets management is essential and critical in order to protect data in the cloud.  Key Vault is Microsoft Azure's solution to make this happen.  This module allows you to easily fetch secrets securely on the puppet server and embed them into catalogs during compilation time.
+Secure secrets management is essential and critical in order to protect data in the cloud.  Key Vault is Microsoft Azure's solution to make this happen.
+This module provides a Puppet function and a Hiera backend that allows you to easily fetch secrets securely on the puppet server and embed them into catalogs during compilation time.
 
 ## Setup
 
@@ -27,7 +28,7 @@ The module requires the following:
 * Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions 
   to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
 
-## How it works
+## How the function works
 
 This module contains a Puppet 4 function that allows you to securely retrieve secrets from Azure Key Vault.  In order to get started simply call the function in your manifests passing in the required parameters:
 
@@ -45,6 +46,35 @@ In the above example the api_versions hash is important.  It is pinning both of 
 * Instance Metadata Service Versions ( https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service )
 * Vault Versions ( TBD )
 
+## How the hiera backend works
+
+This module contains a Hiera 5 backend that allows you to securely retrieve secrets from Azure key vault and use them in hiera.
+
+Add a new entry to the `hierarchy` hash in `hiera.yaml` referencing the vault name and API versions:
+
+```yaml
+- name: keyvault
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: production-vault
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-02-01'
+```
+
+To retrieve a secret in puppet code you can use the `lookup` function:
+
+```puppet
+notify { 'lookup':
+  message => lookup('important-secret'),
+}
+```
+
+This function can also be used in hiera files, for example to set class parameters:
+
+```yaml
+some_class::password: "%{lookup('important-secret')}"
+```
+
 ## How it's secure by default
 
 In order to prevent accidental leakage of your secrets throughout all of the locations puppet stores information the returned value of the `azure_key_vault::secret` function is a string wrapped in a Sensitive data type.  Lets look at an example of what this means and why it's important.  Below is an example of pulling a secret and trying to output the value in a notice function.
@@ -58,6 +88,8 @@ notice($secret)
 ```
 
 This outputs `Notice: Scope(Class[main]): Sensitive [value redacted]`
+
+Note that the Hiera backend returns the secrets as strings rather than wrapped with the Sensitive type.
 
 However, Sometimes you need to unwrap the secret to get to the original data.  This is typically needed under the following but not limited to circumstances.
 
@@ -125,6 +157,8 @@ file { 'C:\\DataForApplication.secret':
 ### Retrieving a specific version of a secret
 
 By Default, the latest secret is always retrieved from the vault.  If you want to ensure only a specific version of a secret is retrieved simply pass a parameter to specify the exact version you want.
+
+This parameter is not available for the Hiera backend.
 
 ```puppet
 $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-password', {

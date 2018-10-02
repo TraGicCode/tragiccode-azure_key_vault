@@ -17,16 +17,14 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
         secret_name,
         options['vault_api_version'],
         access_token,
-        ''
+        '',
       )
-    rescue => OpenURI::HTTPError e
-      Puppet.warning(e)
+    rescue RuntimeError => e
+      Puppet.warning(e.message)
       secret_value = nil
     end
-    if secret_value.nil?
-      context.not_found()
-      return
-    end
+    context.not_found() if secret_value.nil?
+    return if secret_value.nil?
     return context.cache(secret_name, secret_value)
   end
 end

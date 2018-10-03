@@ -9,12 +9,16 @@ describe 'azure_key_vault::lookup' do
     }
   end
   let(:lookup_context) do
-    environment = double(:environment)
+    environment = instance_double('environment')
     allow(environment).to receive(:name).and_return('production')
     invocation = Puppet::Pops::Lookup::Invocation.new(nil)
     environment_context = Puppet::Pops::Lookup::EnvironmentContext.create_adapter(environment)
-    function_context = Puppet::Pops::Lookup::FunctionContext.new(environment_context, nil, 'the_function',)
-    Puppet::Pops::Lookup::Context.new(function_context, invocation,)
+    function_context = Puppet::Pops::Lookup::FunctionContext.new(
+      environment_context,
+      nil,
+      'the_function',
+    )
+    Puppet::Pops::Lookup::Context.new(function_context, invocation)
   end
 
   it { is_expected.not_to eq(nil) }
@@ -24,14 +28,14 @@ describe 'azure_key_vault::lookup' do
   end
   it 'validates the :options hash' do
     is_expected.to run.with_params(
-      'secret_name', {'key1' => 'value1'}, lookup_context,
+      'secret_name', { 'key1' => 'value1' }, lookup_context
     ).and_raise_error(ArgumentError)
   end
   it 'uses the cache' do
     expect(lookup_context).to receive(:cache_has_key).with('secret_name').and_return(true)
     expect(lookup_context).to receive(:cached_value).with('secret_name').and_return('value')
     is_expected.to run.with_params(
-      'secret_name', options, lookup_context,
+      'secret_name', options, lookup_context
     ).and_return('value')
   end
 end

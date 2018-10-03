@@ -136,7 +136,7 @@ $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-pass
 
 ## Reference
 
-See [REFERENCE.md](REFERENCE.md)
+See [REFERENCE.md](https://github.com/tragiccode/tragiccode-azure_key_vault/blob/master/REFERENCE.md)
 
 ## Development
 

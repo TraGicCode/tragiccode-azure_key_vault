@@ -62,6 +62,12 @@
       "version_requirement": ">= 4.7.0 < 7.0.0"
     }
   ],
+  "tags": [
+    "azure",
+    "vault",
+    "azure key vault",
+    "azure vault"
+  ],
   "pdk-version": "1.7.0",
   "template-url": "file://C:/Program Files/Puppet Labs/DevelopmentKit/share/cache/pdk-templates.git",
   "template-ref": "1.7.0-0-g57412ed"

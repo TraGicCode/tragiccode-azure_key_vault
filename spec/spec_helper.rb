@@ -4,12 +4,9 @@ end
 
 require 'puppetlabs_spec_helper/module_spec_helper'
 require 'rspec-puppet-facts'
-require 'webmock/rspec'
-require 'puppet_x/tragiccode/azure'
 
 begin
   require 'spec_helper_local' if File.file?(File.join(File.dirname(__FILE__), 'spec_helper_local.rb'))
-  WebMock.disable_net_connect!
 rescue LoadError => loaderror
   warn "Could not require spec_helper_local: #{loaderror.message}"
 end
@@ -49,3 +46,7 @@ def ensure_module_defined(module_name)
 end
 
 # 'spec_overrides' from sync.yml will appear below this line
+require 'webmock/rspec'
+require 'puppet_x/tragiccode/azure'
+WebMock.disable_net_connect!
+

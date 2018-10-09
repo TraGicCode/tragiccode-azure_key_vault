@@ -49,4 +49,3 @@ end
 require 'webmock/rspec'
 require 'puppet_x/tragiccode/azure'
 WebMock.disable_net_connect!
-

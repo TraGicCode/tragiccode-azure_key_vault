@@ -77,7 +77,7 @@ some_class::password: "%{lookup('important-secret')}"
 
 ## How it's secure by default
 
-In order to prevent accidental leakage of your secrets throughout all of the locations puppet stores information the returned value of the `azure_key_vault::secret` function is a string wrapped in a Sensitive data type.  Lets look at an example of what this means and why it's important.  Below is an example of pulling a secret and trying to output the value in a notice function.
+In order to prevent accidental leakage of your secrets throughout all of the locations puppet stores information the returned value of the `azure_key_vault::secret` function & Hiera backend return a string wrapped in a Sensitive data type.  Lets look at an example of what this means and why it's important.  Below is an example of pulling a secret and trying to output the value in a notice function.
 
 ```puppet
 $secret = azure_key_vault::secret('production-vault', 'important-secret', {
@@ -88,8 +88,6 @@ notice($secret)
 ```
 
 This outputs `Notice: Scope(Class[main]): Sensitive [value redacted]`
-
-Note that the Hiera backend returns the secrets as strings rather than wrapped with the Sensitive type.
 
 However, Sometimes you need to unwrap the secret to get to the original data.  This is typically needed under the following but not limited to circumstances.
 

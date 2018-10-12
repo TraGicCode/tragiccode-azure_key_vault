@@ -156,8 +156,6 @@ file { 'C:\\DataForApplication.secret':
 
 By Default, the latest secret is always retrieved from the vault.  If you want to ensure only a specific version of a secret is retrieved simply pass a parameter to specify the exact version you want.
 
-This parameter is not available for the Hiera backend.
-
 ```puppet
 $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-password', {
   metadata_api_version => '2018-02-01',
@@ -165,6 +163,8 @@ $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-pass
 },
 '067e89990f0a4a50a7bd854b40a56089')
 ```
+
+**NOTE: Retrieving a specific version of a secret is currently not available via the hiera backend**
 
 ## Reference
 

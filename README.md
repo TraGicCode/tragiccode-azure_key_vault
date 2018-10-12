@@ -53,7 +53,7 @@ This module contains a Hiera 5 backend that allows you to securely retrieve secr
 Add a new entry to the `hierarchy` hash in `hiera.yaml` referencing the vault name and API versions:
 
 ```yaml
-- name: keyvault
+- name: 'Azure Key Vault Secrets'
     lookup_key: azure_key_vault::lookup
     options:
       vault_name: production-vault

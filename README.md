@@ -75,6 +75,30 @@ This function can also be used in hiera files, for example to set class paramete
 some_class::password: "%{lookup('important-secret')}"
 ```
 
+You can use a fact to specify different vaults for different groups of nodes, for example:
+
+```yaml
+- name: 'Azure Key Vault Secrets per environment'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: "%{facts.environment}-vault"
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-02-01'
+```
+
+For extra security consider including the name of the vault as an
+[extension in the certificate request](https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html)
+so it cannot be changed:
+
+```yaml
+- name: 'Azure Key Vault Secrets from trusted fact'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: "%{trusted.extensions.vault_name}"
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-02-01'
+```
+
 ## How it's secure by default
 
 In order to prevent accidental leakage of your secrets throughout all of the locations puppet stores information the returned value of the `azure_key_vault::secret` function & Hiera backend return a string wrapped in a Sensitive data type.  Lets look at an example of what this means and why it's important.  Below is an example of pulling a secret and trying to output the value in a notice function.

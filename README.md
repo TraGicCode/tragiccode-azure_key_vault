@@ -75,26 +75,16 @@ This function can also be used in hiera files, for example to set class paramete
 some_class::password: "%{lookup('important-secret')}"
 ```
 
-You can use a fact to specify different vaults for different groups of nodes, for example:
-
-```yaml
-- name: 'Azure Key Vault Secrets per environment'
-    lookup_key: azure_key_vault::lookup
-    options:
-      vault_name: "%{facts.environment}-vault"
-      vault_api_version: '2016-10-01'
-      metadata_api_version: '2018-02-01'
-```
-
-For extra security consider including the name of the vault as an
-[extension in the certificate request](https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html)
-so it cannot be changed:
+You can use a fact to specify different vaults for different groups of nodes. It is
+recommended to use a trusted fact such as trusted.extensions.pp_environment as these facts
+cannot be altered.
+Alternatively a custom trusted fact can be included [in the certificate request](https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html)]
 
 ```yaml
 - name: 'Azure Key Vault Secrets from trusted fact'
     lookup_key: azure_key_vault::lookup
     options:
-      vault_name: "%{trusted.extensions.vault_name}"
+      vault_name: "%{trusted.extensions.pp_environment}"
       vault_api_version: '2016-10-01'
       metadata_api_version: '2018-02-01'
 ```

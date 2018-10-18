@@ -8,6 +8,8 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
   end
 
   def lookup_key(secret_name, options, context)
+    # This is a reserved key name in hiera
+    return if secret_name == 'lookup_options'
     return context.cached_value(secret_name) if context.cache_has_key(secret_name)
     access_token = if context.cache_has_key('access_token')
                      context.cached_value('access_token')

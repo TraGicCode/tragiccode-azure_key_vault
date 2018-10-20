@@ -38,4 +38,11 @@ describe 'azure_key_vault::lookup' do
       'secret_name', options, lookup_context
     ).and_return('value')
   end
+
+  it 'call context.not_found for the lookup_options key' do
+    expect(lookup_context).to receive(:not_found)
+    is_expected.to run.with_params(
+      'lookup_options', options, lookup_context
+    )
+  end
 end

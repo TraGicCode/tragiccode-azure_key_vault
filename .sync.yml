@@ -7,6 +7,7 @@ Gemfile:
         ref: '20ee04ba1234e9e83eb2ffb5056e23d641c7a018'
         condition: "Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.2.2')"
       - gem: 'puppet-strings'
+      - gem: 'webmock'
 
 Rakefile:
   requires:
@@ -14,6 +15,10 @@ Rakefile:
 
 spec/spec_helper.rb:
   mock_with: ':rspec'
+  spec_overrides: |
+    require 'webmock/rspec'
+    require 'puppet_x/tragiccode/azure'
+    WebMock.disable_net_connect!
 
 .gitlab-ci.yml:
   delete: true
@@ -21,3 +26,9 @@ spec/spec_helper.rb:
 .travis.yml:
   extras:
     - env: CHECK=build DEPLOY_TO_FORGE=yes
+
+.rubocop.yml:
+  default_configs:
+    Style/ClassAndModuleChildren:
+      Description: Compact style reduces the required amount of indentation.
+      EnforcedStyle: nested

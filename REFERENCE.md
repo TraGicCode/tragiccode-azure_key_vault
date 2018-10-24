@@ -5,9 +5,40 @@
 
 **Functions**
 
+* [`azure_key_vault::lookup`](#azure_key_vaultlookup): 
 * [`azure_key_vault::secret`](#azure_key_vaultsecret): Retrieves secrets from Azure's Key Vault.
 
 ## Functions
+
+### azure_key_vault::lookup
+
+Type: Ruby 4.x API
+
+The azure_key_vault::lookup function.
+
+#### `azure_key_vault::lookup(Variant[String, Numeric] $secret_name, Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String}] $options, Puppet::LookupContext $context)`
+
+The azure_key_vault::lookup function.
+
+Returns: `Any`
+
+##### `secret_name`
+
+Data type: `Variant[String, Numeric]`
+
+
+
+##### `options`
+
+Data type: `Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String}]`
+
+
+
+##### `context`
+
+Data type: `Puppet::LookupContext`
+
+
 
 ### azure_key_vault::secret
 

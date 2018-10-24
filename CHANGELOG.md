@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.4.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/0.4.0) (2018-10-24)
+
+[Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/0.3.0...0.4.0)
+
+### Added
+
+- Add a Hiera backend [\#13](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/13) ([hbuckle](https://github.com/hbuckle))
+
+### UNCATEGORIZED PRS; GO LABEL THEM
+
+- \(GH-20\) Update pdk template to latest [\#22](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/22) ([TraGicCode](https://github.com/TraGicCode))
+- \(GH-14\) Adding tags to metadata.json [\#18](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/18) ([TraGicCode](https://github.com/TraGicCode))
+- \(GH-15\) Fix forge link for reference.md [\#16](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/16) ([TraGicCode](https://github.com/TraGicCode))
+
 ## [0.3.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/0.3.0) (2018-09-26)
 
 [Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/0.2.0...0.3.0)

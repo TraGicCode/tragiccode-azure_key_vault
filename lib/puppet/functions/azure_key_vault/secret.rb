@@ -28,6 +28,7 @@ Puppet::Functions.create_function(:'azure_key_vault::secret') do
       access_token,
       secret_version,
     )
+
     Puppet::Pops::Types::PSensitiveType::Sensitive.new(secret_value)
   end
 end

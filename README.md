@@ -25,7 +25,7 @@ The module requires the following:
 
 * Puppet Agent 4.7.1 or later.
 * Azure Subscription with one or more vaults already created and loaded with secrets.
-* Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions 
+* Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
   to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
 
 ## How the function works
@@ -78,7 +78,7 @@ some_class::password: "%{lookup('important-secret')}"
 You can use a fact to specify different vaults for different groups of nodes. It is
 recommended to use a trusted fact such as trusted.extensions.pp_environment as these facts
 cannot be altered.
-Alternatively a custom trusted fact can be included [in the certificate request](https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html)]
+Alternatively a custom trusted fact can be included [in the certificate request(https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html)]
 
 ```yaml
 - name: 'Azure Key Vault Secrets from trusted fact'

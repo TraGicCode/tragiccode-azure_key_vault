@@ -78,7 +78,7 @@ some_class::password: "%{lookup('important-secret')}"
 You can use a fact to specify different vaults for different groups of nodes. It is
 recommended to use a trusted fact such as trusted.extensions.pp_environment as these facts
 cannot be altered.
-Alternatively a custom trusted fact can be included [in the certificate request(https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html)]
+Alternatively a custom trusted fact can be included [in the certificate request](https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html)
 
 ```yaml
 - name: 'Azure Key Vault Secrets from trusted fact'

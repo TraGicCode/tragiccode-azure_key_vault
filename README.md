@@ -34,7 +34,7 @@ This module contains a Puppet 4 function that allows you to securely retrieve se
 
 ```puppet
 $important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
-  metadata_api_version => '2018-02-01',
+  metadata_api_version => '2018-04-02',
   vault_api_version    => '2016-10-01',
 })
 ```
@@ -58,7 +58,7 @@ Add a new entry to the `hierarchy` hash in `hiera.yaml` referencing the vault na
     options:
       vault_name: production-vault
       vault_api_version: '2016-10-01'
-      metadata_api_version: '2018-02-01'
+      metadata_api_version: '2018-04-02'
 ```
 
 To retrieve a secret in puppet code you can use the `lookup` function:
@@ -86,7 +86,7 @@ Alternatively a custom trusted fact can be included [in the certificate request]
     options:
       vault_name: "%{trusted.extensions.pp_environment}"
       vault_api_version: '2016-10-01'
-      metadata_api_version: '2018-02-01'
+      metadata_api_version: '2018-04-02'
 ```
 
 ## How it's secure by default
@@ -95,7 +95,7 @@ In order to prevent accidental leakage of your secrets throughout all of the loc
 
 ```puppet
 $secret = azure_key_vault::secret('production-vault', 'important-secret', {
-  metadata_api_version => '2018-02-01',
+  metadata_api_version => '2018-04-02',
   vault_api_version    => '2016-10-01',
 })
 notice($secret)
@@ -120,7 +120,7 @@ In order to change the original secret you always follow the same 3 step process
 
 ```puppet
 $secret = azure_key_vault::secret('production-vault', 'important-secret', {
-  metadata_api_version => '2018-02-01',
+  metadata_api_version => '2018-04-02',
   vault_api_version    => '2016-10-01',
 })
 
@@ -138,7 +138,7 @@ Unfortunately, All resource's don't magically handle the sensitive data type.  I
 
 ```puppet
 $admin_password_secret = azure_key_vault::secret('production-vault', 'important-secret', {
-  metadata_api_version => '2018-02-01',
+  metadata_api_version => '2018-04-02',
   vault_api_version    => '2016-10-01',
 })
 
@@ -159,7 +159,7 @@ Below shows an example of how to retrieve a secret and place it in a file on a n
 ```puppet
 file { 'C:\\DataForApplication.secret':
   content   => azure_key_vault::secret('production-vault', 'important-secret', {
-    metadata_api_version => '2018-02-01',
+    metadata_api_version => '2018-04-02',
     vault_api_version    => '2016-10-01',
   }),
   ensure    => file,
@@ -172,7 +172,7 @@ By Default, the latest secret is always retrieved from the vault.  If you want t
 
 ```puppet
 $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-password', {
-  metadata_api_version => '2018-02-01',
+  metadata_api_version => '2018-04-02',
   vault_api_version    => '2016-10-01',
 },
 '067e89990f0a4a50a7bd854b40a56089')

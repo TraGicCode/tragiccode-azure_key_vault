@@ -69,6 +69,6 @@
     "azure vault"
   ],
   "pdk-version": "1.7.1",
-  "template-url": "C:\\Source\\GitHub\\pdk-templates",
-  "template-ref": "heads/fix-appveyor-double-build-0-g66037f0"
+  "template-url": "https://github.com/tragiccode/pdk-templates",
+  "template-ref": "heads/master-0-g66037f0"
 }

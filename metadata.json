@@ -69,6 +69,6 @@
     "azure vault"
   ],
   "pdk-version": "1.7.1",
-  "template-url": "file:///opt/puppetlabs/pdk/share/cache/pdk-templates.git",
-  "template-ref": "1.7.1-0-g810b982"
+  "template-url": "C:\\Source\\GitHub\\pdk-templates",
+  "template-ref": "heads/fix-appveyor-double-build-0-g66037f0"
 }

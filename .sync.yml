@@ -15,7 +15,7 @@ Rakefile:
 
 spec/spec_helper.rb:
   mock_with: ':rspec'
-  spec_overrides: |
+  spec_overrides: |-
     require 'webmock/rspec'
     require 'puppet_x/tragiccode/azure'
     WebMock.disable_net_connect!

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.1](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/1.0.1) (2018-12-14)
+
+[Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/1.0.0...1.0.1)
+
+### Fixed
+
+- \(GH-42\) Fix .empty? method missing on uri [\#45](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/45) ([TraGicCode](https://github.com/TraGicCode))
+- \(GH-43\) Fix debug message [\#44](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/44) ([TraGicCode](https://github.com/TraGicCode))
+- Fix typo in readme.md [\#29](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/29) ([lupyana](https://github.com/lupyana))
+
 ## [1.0.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/1.0.0) (2018-10-25)
 
 [Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/0.4.0...1.0.0)

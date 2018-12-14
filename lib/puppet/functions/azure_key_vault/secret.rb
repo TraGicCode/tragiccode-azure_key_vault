@@ -15,7 +15,7 @@ Puppet::Functions.create_function(:'azure_key_vault::secret') do
   end
 
   def secret(vault_name, secret_name, api_versions_hash, secret_version = '')
-    Puppet.debug("vault_base_url: #{vault_name}")
+    Puppet.debug("vault_name: #{vault_name}")
     Puppet.debug("secret_name: #{secret_name}")
     Puppet.debug("secret_version: #{secret_version}")
     Puppet.debug("metadata_api_version: #{api_versions_hash['metadata_api_version']}")

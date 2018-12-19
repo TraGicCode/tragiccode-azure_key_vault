@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [1.0.2](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/1.0.2) (2018-12-19)
+
+[Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/1.0.1...1.0.2)
+
+### Fixed
+
+- \(GH-47\) Fix ruby 1.9 issue with uri [\#48](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/48) ([TraGicCode](https://github.com/TraGicCode))
+
 ## [1.0.1](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/1.0.1) (2018-12-14)
 
 [Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/1.0.0...1.0.1)

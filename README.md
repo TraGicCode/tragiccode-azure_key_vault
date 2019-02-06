@@ -1,8 +1,11 @@
 # azure_key_vault
 
 [![Puppet Forge Version](https://img.shields.io/puppetforge/v/tragiccode/azure_key_vault.svg)](https://forge.puppetlabs.com/tragiccode/azure_key_vault)
+[![Puppet Forge Pdk Version](http://img.shields.io/puppetforge/pdk-version/tragiccode/azure_key_vault.svg)](https://forge.puppetlabs.com/tragiccode/azure_key_vault)
 [![Puppet Forge Downloads](https://img.shields.io/puppetforge/dt/tragiccode/azure_key_vault.svg)](https://forge.puppetlabs.com/tragiccode/azure_key_vault)
 [![Puppet Forge Endorsement](https://img.shields.io/puppetforge/e/tragiccode/azure_key_vault.svg)](https://forge.puppetlabs.com/tragiccode/azure_key_vault)
+
+
 
 #### Table of Contents
 

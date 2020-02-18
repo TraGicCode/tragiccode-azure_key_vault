@@ -53,4 +53,14 @@ describe 'azure_key_vault::secret' do
     expect(subject.execute(vault_name, secret_name, api_versions_hash)).to be_an_instance_of(Puppet::Pops::Types::PSensitiveType::Sensitive)
   end
   # rubocop:enable RSpec/NamedSubject
+
+  # rubocop:disable RSpec/NamedSubject
+  it 'retrieves access_token from cache' do
+    expect(TragicCode::Azure).to receive(:get_access_token).with(api_versions_hash['metadata_api_version']).and_return(access_token).once
+    expect(TragicCode::Azure).to receive(:get_secret).with(vault_name, secret_name, api_versions_hash['vault_api_version'], access_token, '').and_return(secret_value).twice
+
+    subject.execute(vault_name, secret_name, api_versions_hash)
+    subject.execute(vault_name, secret_name, api_versions_hash)
+  end
+  # rubocop:enable RSpec/NamedSubject
 end

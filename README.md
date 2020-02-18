@@ -28,7 +28,7 @@ This module provides a Puppet function and a Hiera backend that allows you to ea
 
 The module requires the following:
 
-* Puppet Agent 4.7.1 or later.
+* Puppet Agent 6.0.0 or later.
 * Azure Subscription with one or more vaults already created and loaded with secrets.
 * Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
   to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
@@ -45,6 +45,8 @@ $important_secret = azure_key_vault::secret('production-vault', 'important-secre
 ```
 
 This example fetches the latest secret with the name "important-secret" from the vault named "production-vault".  Under the covers it calls the Azure instance metadata service api to get an access token in order to make authenticated requests to the vault api on-behalf-of the MSI.  Once the secret is returned you can begin to use it throughout your puppet code.
+
+> NOTE: In order to improve performance and avoid the request limit for the metadata service api the api token retrieved once then stored in a cache that exists for the duration of the puppet run.
 
 In the above example the api_versions hash is important.  It is pinning both of the Azure specific api's ( instance metadata api & vault api ) used under the hood to specific versions so that you have full control as to when your puppet code starts calling newer/older versions of the apis.  In order to understand what versions are available to your regions please visit the azure documentation
 

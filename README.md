@@ -28,7 +28,7 @@ This module provides a Puppet function and a Hiera backend that allows you to ea
 
 The module requires the following:
 
-* Puppet Agent 4.7.1 or later.
+* Puppet Agent 6.0.0 or later.
 * Azure Subscription with one or more vaults already created and loaded with secrets.
 * Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
   to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad

@@ -6,6 +6,7 @@ describe 'azure_key_vault::lookup' do
       'vault_name' => 'vault_name',
       'vault_api_version' => 'vault_api_version',
       'metadata_api_version' => 'metadata_api_version',
+      'key_replacement_token' => '-',
     }
   end
   let(:lookup_context) do
@@ -32,8 +33,8 @@ describe 'azure_key_vault::lookup' do
     ).and_raise_error(ArgumentError)
   end
   it 'uses the cache' do
-    expect(lookup_context).to receive(:cache_has_key).with('secret_name').and_return(true)
-    expect(lookup_context).to receive(:cached_value).with('secret_name').and_return('value')
+    expect(lookup_context).to receive(:cache_has_key).with('secret-name').and_return(true)
+    expect(lookup_context).to receive(:cached_value).with('secret-name').and_return('value')
     is_expected.to run.with_params(
       'secret_name', options, lookup_context
     ).and_return('value')

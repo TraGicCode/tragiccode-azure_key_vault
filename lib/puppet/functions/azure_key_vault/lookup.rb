@@ -3,7 +3,7 @@ require_relative '../../../puppet_x/tragiccode/azure'
 Puppet::Functions.create_function(:'azure_key_vault::lookup') do
   dispatch :lookup_key do
     param 'Variant[String, Numeric]', :secret_name
-    param 'Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String}]', :options
+    param 'Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, key_replacement_token => String}]', :options
     param 'Puppet::LookupContext', :context
   end
 

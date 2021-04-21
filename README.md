@@ -66,6 +66,7 @@ Add a new entry to the `hierarchy` hash in `hiera.yaml` referencing the vault na
       vault_name: production-vault
       vault_api_version: '2016-10-01'
       metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
 ```
 
 To retrieve a secret in puppet code you can use the `lookup` function:
@@ -94,6 +95,7 @@ Alternatively a custom trusted fact can be included [in the certificate request]
       vault_name: "%{trusted.extensions.pp_environment}"
       vault_api_version: '2016-10-01'
       metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
 ```
 
 ## How it's secure by default

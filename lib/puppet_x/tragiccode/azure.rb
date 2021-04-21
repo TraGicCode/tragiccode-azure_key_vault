@@ -5,7 +5,7 @@ module TragicCode
   # Azure API functions
   class Azure
     def self.normalize_object_name(object_name, replacement)
-      return object_name.gsub("[^0-9a-zA-Z-]", replacement)
+      object_name.gsub('[^0-9a-zA-Z-]', replacement)
     end
 
     def self.get_access_token(api_version)

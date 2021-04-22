@@ -11,11 +11,11 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     # This is a reserved key name in hiera
     return context.not_found if secret_name == 'lookup_options'
     return context.cached_value(secret_name) if context.cache_has_key(secret_name)
-    access_token = if context.cache_has_key('access_token')
-                     context.cached_value('access_token')
-                   else
-                     TragicCode::Azure.get_access_token(options['metadata_api_version'])
-                   end
+    access_token = context.cached_value('access_token')
+    if access_token.nil?
+      access_token = TragicCode::Azure.get_access_token(options['metadata_api_version'])
+      context.cache('access_token', access_token)
+    end
     begin
       secret_value = TragicCode::Azure.get_secret(
         options['vault_name'],

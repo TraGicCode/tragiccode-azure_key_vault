@@ -11,6 +11,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     # This is a reserved key name in hiera
     return context.not_found if secret_name == 'lookup_options'
     normalized_secret_name = TragicCode::Azure.normalize_object_name(secret_name, options['key_replacement_token'] || '-')
+    context.explain { "  Using normalized KeyVault secret key for lookup: #{normalized_secret_name}" }
     return context.cached_value(normalized_secret_name) if context.cache_has_key(normalized_secret_name)
     access_token = if context.cache_has_key('access_token')
                      context.cached_value('access_token')

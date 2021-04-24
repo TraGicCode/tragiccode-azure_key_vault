@@ -39,6 +39,19 @@ describe 'azure_key_vault::lookup' do
       'secret_name', options, lookup_context
     ).and_return('value')
   end
+  it 'caches the access token after a cache miss' do
+    access_token_value = 'access_value'
+    secret_value = 'secret_value'
+
+    expect(lookup_context).to receive(:cached_value).with('access_token').and_return(nil)
+    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+    expect(lookup_context).to receive(:cache).with('access_token', access_token_value).ordered
+    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+    expect(lookup_context).to receive(:cache).and_return(secret_value).ordered
+    is_expected.to run.with_params(
+      'secret_name', options, lookup_context
+    ).and_return(secret_value)
+  end
 
   it 'call context.not_found for the lookup_options key' do
     expect(lookup_context).to receive(:not_found)

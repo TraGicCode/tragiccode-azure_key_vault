@@ -13,11 +13,11 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     normalized_secret_name = TragicCode::Azure.normalize_object_name(secret_name, options['key_replacement_token'] || '-')
     context.explain { "  Using normalized KeyVault secret key for lookup: #{normalized_secret_name}" }
     return context.cached_value(normalized_secret_name) if context.cache_has_key(normalized_secret_name)
-    access_token = if context.cache_has_key('access_token')
-                     context.cached_value('access_token')
-                   else
-                     TragicCode::Azure.get_access_token(options['metadata_api_version'])
-                   end
+    access_token = context.cached_value('access_token')
+    if access_token.nil?
+      access_token = TragicCode::Azure.get_access_token(options['metadata_api_version'])
+      context.cache('access_token', access_token)
+    end
     begin
       secret_value = TragicCode::Azure.get_secret(
         options['vault_name'],

@@ -4,6 +4,10 @@ require 'json'
 module TragicCode
   # Azure API functions
   class Azure
+    def self.normalize_object_name(object_name, replacement)
+      object_name.gsub(%r{[^0-9a-zA-Z-]}, replacement)
+    end
+
     def self.get_access_token(api_version)
       uri = URI("http://169.254.169.254/metadata/identity/oauth2/token?api-version=#{api_version}&resource=https%3A%2F%2Fvault.azure.net")
       req = Net::HTTP::Get.new(uri.request_uri)

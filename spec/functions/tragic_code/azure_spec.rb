@@ -1,6 +1,17 @@
 require 'spec_helper'
 
 describe TragicCode::Azure do
+  context '.normalize_object_name' do
+    it 'returns a bearer token' do
+      original_var_name = 'puppetdb::master::config::puppetdb_server'
+      key_replacement_token = '-'
+
+      expected_key_value = 'puppetdb--master--config--puppetdb-server'
+
+      expect(described_class.normalize_object_name(original_var_name, key_replacement_token)).to eq(expected_key_value)
+    end
+  end
+
   context '.get_access_token' do
     it 'returns a bearer token' do
       stub_request(:get, %r{169.254.169.254})

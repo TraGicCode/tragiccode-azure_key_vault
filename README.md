@@ -66,6 +66,7 @@ Add a new entry to the `hierarchy` hash in `hiera.yaml` referencing the vault na
       vault_name: production-vault
       vault_api_version: '2016-10-01'
       metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
 ```
 
 To retrieve a secret in puppet code you can use the `lookup` function:
@@ -94,7 +95,22 @@ Alternatively a custom trusted fact can be included [in the certificate request]
       vault_name: "%{trusted.extensions.pp_environment}"
       vault_api_version: '2016-10-01'
       metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
 ```
+
+### A note on secret keys
+
+KeyVault secret names can only contain the characters `0-9`, `a-z`, `A-Z`, and `-`.
+
+When relying on automatic parameter lookup, this is almost always going to contain the module delimiter (`::`) or underscores.
+
+This module will automatically convert the variable name to a valid value by replacing every invalid character with the `key_replacement_token` value, which defaults to `-`.
+
+For example, the hiera variable `puppetdb::master::config::puppetdb_server` will automatically be converted to `puppetdb--master--config--puppetdb-server` before being queried up in KeyVault.
+
+When troubleshooting, you can run hiera from the commandline with the `--explain` option to see the key name being used :
+
+      Using normalized KeyVault secret key for lookup: puppetdb--master--config--puppetdb-server
 
 ## How it's secure by default
 

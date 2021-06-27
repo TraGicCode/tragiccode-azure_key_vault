@@ -28,3 +28,8 @@ spec/spec_helper.rb:
     Style/ClassAndModuleChildren:
       Description: Compact style reduces the required amount of indentation.
       EnforcedStyle: nested
+
+appveyor.yml:
+  remove_branches:
+    - main
+    - release

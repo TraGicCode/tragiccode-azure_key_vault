@@ -30,6 +30,4 @@ spec/spec_helper.rb:
       EnforcedStyle: nested
 
 appveyor.yml:
-  remove_branches:
-    - main
-    - release
+  unmanaged: true

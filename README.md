@@ -57,7 +57,7 @@ In the above example the api_versions hash is important.  It is pinning both of 
 
 This module contains a Hiera 5 backend that allows you to securely retrieve secrets from Azure key vault and use them in hiera.
 
-Add a new entry to the `hierarchy` hash in `hiera.yaml` referencing the vault name and API versions:
+Add a new entry to the `hierarchy` hash in `hiera.yaml` providing the following required lookup options:
 
 ```yaml
 - name: 'Azure Key Vault Secrets'
@@ -67,6 +67,10 @@ Add a new entry to the `hierarchy` hash in `hiera.yaml` referencing the vault na
       vault_api_version: '2016-10-01'
       metadata_api_version: '2018-04-02'
       key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+        - '^.*_password$'
+        - '^password.*'
 ```
 
 To retrieve a secret in puppet code you can use the `lookup` function:
@@ -96,9 +100,35 @@ Alternatively a custom trusted fact can be included [in the certificate request]
       vault_api_version: '2016-10-01'
       metadata_api_version: '2018-04-02'
       key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+        - '^.*_password$'
+        - '^password.*'
 ```
 
-### A note on secret keys
+### What is confine_to_keys?
+
+By design, hiera will traverse the configured heiarchy for a given key until one is found.  This means that there can be a potentially large number of web requests against azure key vault. In order to improve performance and prevent hitting the Azure KeyVault rate limits ( ex: currently there is a maximum of 2,000 lookups every 10 seconds allowed against a key vault), the confine_to_keys allows you to provide an array of regexs that help avoid making a remote call.
+
+As an example, if you defined your confine_to_keys as shown below, hiera will only make a web request to get the secret in azure key vault when the key being lookedup matches atleast one of the provided regular expressions in the confine_to_keys array.
+
+```yaml
+- name: 'Azure Key Vault Secrets from trusted fact'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: "%{trusted.extensions.pp_environment}"
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+        - '^.*_password$'
+        - '^password.*'
+```
+
+**NOTE: The confine_to_keys is very important to make you sure get right.  As a best practice, come up with some conventions to avoid having a large number of regexs you have to add/update/remove and also test.  The above example provides a great starting point.**
+
+### What is key_replacement_token?
 
 KeyVault secret names can only contain the characters `0-9`, `a-z`, `A-Z`, and `-`.
 

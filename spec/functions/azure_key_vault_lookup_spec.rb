@@ -6,6 +6,7 @@ describe 'azure_key_vault::lookup' do
       'vault_name' => 'vault_name',
       'vault_api_version' => 'vault_api_version',
       'metadata_api_version' => 'metadata_api_version',
+      'confine_to_keys' => [%r{^.*sensitive_azure.*}],
     }
   end
   let(:lookup_context) do
@@ -28,14 +29,14 @@ describe 'azure_key_vault::lookup' do
   end
   it 'validates the :options hash' do
     is_expected.to run.with_params(
-      'secret_name', { 'key1' => 'value1' }, lookup_context
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', { 'key1' => 'value1' }, lookup_context
     ).and_raise_error(ArgumentError)
   end
   it 'uses the cache' do
-    expect(lookup_context).to receive(:cache_has_key).with('secret-name').and_return(true)
-    expect(lookup_context).to receive(:cached_value).with('secret-name').and_return('value')
+    expect(lookup_context).to receive(:cache_has_key).with('profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return(true)
+    expect(lookup_context).to receive(:cached_value).with('profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return('value')
     is_expected.to run.with_params(
-      'secret_name', options, lookup_context
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context
     ).and_return('value')
   end
   it 'caches the access token after a cache miss' do
@@ -48,7 +49,7 @@ describe 'azure_key_vault::lookup' do
     expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
     expect(lookup_context).to receive(:cache).and_return(secret_value).ordered
     is_expected.to run.with_params(
-      'secret_name', options, lookup_context
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context
     ).and_return(secret_value)
   end
 
@@ -60,14 +61,49 @@ describe 'azure_key_vault::lookup' do
   end
 
   it 'uses - as the default key_replacement_token' do
-    secret_name = 'profile::windows::sqlserver::sensitive_sql_user_password'
+    secret_name = 'profile::windows::sqlserver::sensitive_azure_sql_user_password'
     access_token_value = 'access_value'
     secret_value = 'secret_value'
     expect(TragicCode::Azure).to receive(:normalize_object_name).with(secret_name, '-')
     expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
     expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
     is_expected.to run.with_params(
-      'profile::windows::sqlserver::sensitive_sql_user_password', options, lookup_context
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context
     ).and_return(secret_value)
+  end
+
+  it 'errors when confine_to_keys is no array' do
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => '^vault.*$' }), lookup_context
+    ).and_raise_error(ArgumentError, %r{'confine_to_keys' expects an Array value}i)
+  end
+
+  it 'errors when passing invalid regexes' do
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['['] }), lookup_context
+    ).and_raise_error(ArgumentError, %r{'confine_to_keys' index 0 expects a Regexp value}i)
+  end
+
+  it 'returns the key if regex matches confine_to_keys' do
+    access_token_value = 'access_value'
+    secret_value = 'secret_value'
+    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => [%r{^.*sensitive_azure.*}] }), lookup_context
+    ).and_return(secret_value)
+  end
+
+  it 'does not return the key if regex does not match confine_to_keys' do
+    access_token_value = 'access_value'
+    secret_value = 'secret_value'
+
+    expect(lookup_context).to receive(:not_found)
+    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_sql_user_password', options.merge({ 'confine_to_keys' => [%r{^sensitive_azure.*$}] }), lookup_context
+    )
   end
 end

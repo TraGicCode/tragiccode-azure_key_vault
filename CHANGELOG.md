@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.0.1](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/v2.0.1) (2021-07-15)
+
+[Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/v2.0.0...v2.0.1)
+
+### Fixed
+
+- Fix issue in which confine\_to\_keys must be an array of strings instead of regexp's [\#77](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/77) ([TraGicCode](https://github.com/TraGicCode))
+
 ## [v2.0.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/v2.0.0) (2021-07-14)
 
 [Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/v1.1.2...v2.0.0)

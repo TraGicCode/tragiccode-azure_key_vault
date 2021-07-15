@@ -17,7 +17,7 @@ Type: Ruby 4.x API
 
 The azure_key_vault::lookup function.
 
-#### `azure_key_vault::lookup(Variant[String, Numeric] $secret_name, Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[Regexp], Optional[key_replacement_token] => String}] $options, Puppet::LookupContext $context)`
+#### `azure_key_vault::lookup(Variant[String, Numeric] $secret_name, Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[String], Optional[key_replacement_token] => String}] $options, Puppet::LookupContext $context)`
 
 The azure_key_vault::lookup function.
 
@@ -31,7 +31,7 @@ Data type: `Variant[String, Numeric]`
 
 ##### `options`
 
-Data type: `Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[Regexp], Optional[key_replacement_token] => String}]`
+Data type: `Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[String], Optional[key_replacement_token] => String}]`
 
 
 

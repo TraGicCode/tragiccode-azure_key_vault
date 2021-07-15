@@ -6,7 +6,7 @@ describe 'azure_key_vault::lookup' do
       'vault_name' => 'vault_name',
       'vault_api_version' => 'vault_api_version',
       'metadata_api_version' => 'metadata_api_version',
-      'confine_to_keys' => [%r{^.*sensitive_azure.*}],
+      'confine_to_keys' => ['^.*sensitive_azure.*'],
     }
   end
   let(:lookup_context) do
@@ -81,7 +81,7 @@ describe 'azure_key_vault::lookup' do
   it 'errors when passing invalid regexes' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['['] }), lookup_context
-    ).and_raise_error(ArgumentError, %r{'confine_to_keys' index 0 expects a Regexp value}i)
+    ).and_raise_error(ArgumentError, %r{creating regexp failed with}i)
   end
 
   it 'returns the key if regex matches confine_to_keys' do
@@ -90,7 +90,7 @@ describe 'azure_key_vault::lookup' do
     expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
     expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
     is_expected.to run.with_params(
-      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => [%r{^.*sensitive_azure.*}] }), lookup_context
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context
     ).and_return(secret_value)
   end
 
@@ -103,7 +103,7 @@ describe 'azure_key_vault::lookup' do
     expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
 
     is_expected.to run.with_params(
-      'profile::windows::sqlserver::sensitive_sql_user_password', options.merge({ 'confine_to_keys' => [%r{^sensitive_azure.*$}] }), lookup_context
+      'profile::windows::sqlserver::sensitive_sql_user_password', options.merge({ 'confine_to_keys' => ['^sensitive_azure.*$'] }), lookup_context
     )
   end
 end

@@ -3,7 +3,7 @@ require_relative '../../../puppet_x/tragiccode/azure'
 Puppet::Functions.create_function(:'azure_key_vault::lookup') do
   dispatch :lookup_key do
     param 'Variant[String, Numeric]', :secret_name
-    param 'Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[Regexp], Optional[key_replacement_token] => String}]', :options
+    param 'Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[String], Optional[key_replacement_token] => String}]', :options
     param 'Puppet::LookupContext', :context
   end
 
@@ -14,6 +14,12 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     confine_keys = options['confine_to_keys']
     if confine_keys
       raise ArgumentError, 'confine_to_keys must be an array' unless confine_keys.is_a?(Array)
+
+      begin
+        confine_keys = confine_keys.map { |r| Regexp.new(r) }
+      rescue StandardError => e
+        raise ArgumentError, "creating regexp failed with: #{e}"
+      end
 
       regex_key_match = Regexp.union(confine_keys)
 

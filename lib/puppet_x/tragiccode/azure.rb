@@ -21,7 +21,7 @@ module TragicCode
           Puppet.debug("set object_id to #{identity['object_id']}")
           Puppet.debug("get_access_token: set uri string to #{uri_s}")
         else
-          Puppet.debug("get_access_token: no explicit identity specified")
+          Puppet.debug('get_access_token: no explicit identity specified')
         end
       end
 

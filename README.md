@@ -233,6 +233,20 @@ $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-pass
 
 **NOTE: Retrieving a specific version of a secret is currently not available via the hiera backend**
 
+### Using a user-assigned managed identity to retrieve a secret
+
+By Default, a system-assigned managed identity is expected to be in place and provide access to the Key Vault. Thus the module expects to have nothing to do in order to gain access; it will just pull secrets and expect that to work.\
+We can specify a user-assigned managed identity to use instead, identified by either its 'client_id' or its 'object_id', both of which should be available from Azure upon creating that identity.
+
+```puppet
+$admin_password_secret = azure_key_vault::secret('production-vault', 'admin-password', {
+  metadata_api_version => '2018-04-02',
+  vault_api_version    => '2016-10-01',
+},
+'067e89990f0a4a50a7bd854b40a56089',
+{ client_id => '22320d01-4355-4140-9c1d-452dea778189' })
+```
+
 ## Reference
 
 See [REFERENCE.md](https://github.com/tragiccode/tragiccode-azure_key_vault/blob/master/REFERENCE.md)

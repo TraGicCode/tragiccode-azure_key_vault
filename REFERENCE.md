@@ -47,7 +47,7 @@ Type: Ruby 4.x API
 
 Retrieves secrets from Azure's Key Vault.
 
-#### `azure_key_vault::secret(String $vault_name, String $secret_name, Hash $api_versions_hash, Optional[String] $secret_version)`
+#### `azure_key_vault::secret(String $vault_name, String $secret_name, Hash $api_versions_hash, Optional[String] $secret_version='', Optional[Hash] $identity={})`
 
 Retrieves secrets from Azure's Key Vault.
 
@@ -75,5 +75,21 @@ A Hash of the exact versions of the metadata_api_version and vault_api_version t
 
 Data type: `Optional[String]`
 
+Default value: ''
+
 The version of the secret you want to retrieve.  This parameter is optional and if not passed the default behavior is to retrieve the latest version.
+
+##### `identity`
+
+Data type: `Optional[Hash]`
+
+Default value: {}
+
+The identifier for the user-assigned managed identity that will provide access to the Key Vault.\
+When absent, a system-assigned managed identity is expected to be in place and provide access.
+When specified, it can have one of two forms, as in the below examples:\
+&emsp;&emsp;&emsp;{ client_id => 'fc34f09d-0f82-4a0f-8c3c-214dcd5d6fa3' }\
+OR\
+&emsp;&emsp;&emsp;{ object_id => 'fc44f09d-0f42-4a0f-8c3c-214dcd0d6fa3' }\
+Both the client ID and the object ID should be returned by Azure upon creating the user-assigned managed identity
 

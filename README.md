@@ -12,6 +12,8 @@
 1. [Description](#description)
 1. [Setup](#setup)
 1. [How it works](#how-it-works)
+    * [Puppet Function](#puppet-function)
+    * [Hiera Backend](#hiera-backend)
 1. [How it's secure by default](#how-its-secure-by-default)
 1. [Usage](#usage)
     * [Embedding a secret in a file](#embedding-a-secret-in-a-file)
@@ -33,7 +35,9 @@ The module requires the following:
 * Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
   to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
 
-## How the function works
+## How it works
+
+### Puppet Function
 
 This module contains a Puppet 4 function that allows you to securely retrieve secrets from Azure Key Vault.  In order to get started simply call the function in your manifests passing in the required parameters:
 
@@ -53,7 +57,7 @@ In the above example the api_versions hash is important.  It is pinning both of 
 * Instance Metadata Service Versions ( https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service )
 * Vault Versions ( TBD )
 
-## How the hiera backend works
+### Hiera Backend
 
 This module contains a Hiera 5 backend that allows you to securely retrieve secrets from Azure key vault and use them in hiera.
 
@@ -229,6 +233,32 @@ $admin_password_secret = azure_key_vault::secret('production-vault', 'admin-pass
   vault_api_version    => '2016-10-01',
 },
 '067e89990f0a4a50a7bd854b40a56089')
+```
+
+**NOTE: Retrieving a specific version of a secret is currently not available via the hiera backend**
+
+### Retrieving a certificate
+
+Azure Key Vault stores certificates "under-the-covers" as secrets.  This means you retrieving certificates can be done using the same `azure_key_vault::secret`
+function. One thing to keep in mind is that the certificate will be based64 encoded and will need to be decoded before usage to have a valid certificate file.
+
+```puppet
+$certificate_secret = azure_key_vault::secret('production-vault', "webapp-certificate", {
+  metadata_api_version => '2018-04-02',
+  vault_api_version    => '2016-10-01',
+})
+
+file { "C:/tmp/webapp-certificate.pfx" :
+  content   => base64('decode', "${certificate_secret.unwrap}"),
+  ensure    => file,
+}
+
+sslcertificate { "Install-WebApp-Certificate" :
+  name       => "${filename}",
+  location   => 'C:\tmp',
+  root_store => 'LocalMachine',
+  thumbprint => "${certificate_thumbprint}"
+}
 ```
 
 **NOTE: Retrieving a specific version of a secret is currently not available via the hiera backend**

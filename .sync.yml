@@ -46,9 +46,6 @@ appveyor.yml:
 .github/workflows/release.yml:
   unmanaged: false
 
-.github/workflows/pr_test.yml:
-  unmanaged: false
-
 .github/workflows/spec.yml:
   checks: 'syntax lint metadata_lint check:symlinks check:git_ignore check:dot_underscore check:test_file rubocop'
   unmanaged: false

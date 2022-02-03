@@ -27,7 +27,7 @@ jobs:
           dataset: ${{ env.HONEYCOMB_DATASET }}
           job-status: ${{ job.status }}
 
-      - name: "Honeycomb: Start first step"
+      - name: "Honeycomb: Start fidrst step"
         run: |
           echo STEP_ID=setup-environment >> $GITHUB_ENV
           echo STEP_START=$(date +%s) >> $GITHUB_ENV

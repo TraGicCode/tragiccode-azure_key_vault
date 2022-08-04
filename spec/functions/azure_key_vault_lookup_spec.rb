@@ -106,4 +106,16 @@ describe 'azure_key_vault::lookup' do
       'profile::windows::sqlserver::sensitive_sql_user_password', options.merge({ 'confine_to_keys' => ['^sensitive_azure.*$'] }), lookup_context
     )
   end
+
+  it 'calls context.not_found when secret is not found in vault' do
+    access_token_value = 'access_value'
+
+    expect(lookup_context).to receive(:not_found)
+    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context
+    )
+  end
 end

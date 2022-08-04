@@ -23,7 +23,7 @@ describe 'azure_key_vault::secret' do
   context 'when getting the latest version of a secret' do
     it 'defaults to using an empty string as the latest version' do
       expect(TragicCode::Azure).to receive(:get_access_token).with(api_versions_hash['metadata_api_version']).and_return(access_token)
-      expect(TragicCode::Azure).to receive(:get_secret).with(vault_name, secret_name, api_versions_hash['vault_api_version'], access_token, '')
+      expect(TragicCode::Azure).to receive(:get_secret).with(vault_name, secret_name, api_versions_hash['vault_api_version'], access_token, '').and_return(secret_value)
 
       is_expected.to run.with_params(vault_name, secret_name, api_versions_hash)
     end
@@ -32,9 +32,20 @@ describe 'azure_key_vault::secret' do
   context 'when getting a specific version of a secret' do
     it 'uses the secret version when retreiving the secret' do
       expect(TragicCode::Azure).to receive(:get_access_token).with(api_versions_hash['metadata_api_version']).and_return(access_token)
-      expect(TragicCode::Azure).to receive(:get_secret).with(vault_name, secret_name, api_versions_hash['vault_api_version'], access_token, secret_version)
+      expect(TragicCode::Azure).to receive(:get_secret).with(vault_name, secret_name, api_versions_hash['vault_api_version'], access_token, secret_version).and_return(secret_value)
 
       is_expected.to run.with_params(vault_name, secret_name, api_versions_hash, secret_version)
+    end
+  end
+
+  context 'when getting a secret that does not exist in the vault' do
+    it 'throws an error' do
+      expect(TragicCode::Azure).to receive(:get_access_token).with(api_versions_hash['metadata_api_version']).and_return(access_token)
+      expect(TragicCode::Azure).to receive(:get_secret).with(vault_name, secret_name, api_versions_hash['vault_api_version'], access_token, secret_version).and_return(nil)
+
+      is_expected.to run.with_params(
+        vault_name, secret_name, api_versions_hash, secret_version
+      ).and_raise_error(Puppet::Error, %r{The secret named #{secret_name} could not be found in a vault named #{vault_name}}i)
     end
   end
 

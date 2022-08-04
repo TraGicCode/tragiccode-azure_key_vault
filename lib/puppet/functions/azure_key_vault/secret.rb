@@ -34,6 +34,8 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
       secret_version,
     )
 
+    raise Puppet::Error, "The secret named #{secret_name} could not be found in a vault named #{vault_name}" if secret_value.nil?
+
     Puppet::Pops::Types::PSensitiveType::Sensitive.new(secret_value)
   end
 end

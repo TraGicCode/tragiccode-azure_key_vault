@@ -27,6 +27,7 @@ module TragicCode
       res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
         http.request(req)
       end
+      return nil if res.is_a?(Net::HTTPNotFound)
       raise res.body unless res.is_a?(Net::HTTPSuccess)
       JSON.parse(res.body)['value']
     end

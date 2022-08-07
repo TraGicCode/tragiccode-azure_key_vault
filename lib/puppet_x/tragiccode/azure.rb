@@ -19,6 +19,22 @@ module TragicCode
       JSON.parse(res.body)['access_token']
     end
 
+    def self.get_access_token_service_principal(credentials)
+      uri = URI("https://login.microsoftonline.com/#{credentials['azure_tenant_id']}/oauth2/v2.0/token")
+      data = {
+        'grant_type': 'client_credentials',
+        'client_id': credentials['azure_client_id'],
+        'client_secret': credentials['azure_client_secret'],
+        'scope': 'https://vault.azure.net/.default'
+      }
+      req = Net::HTTP::Post.new(uri.request_uri)
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        http.request(req, URI.encode_www_form(data))
+      end
+      raise res.body unless res.is_a?(Net::HTTPSuccess)
+      JSON.parse(res.body)['access_token']
+    end
+
     def self.get_secret(vault_name, secret_name, vault_api_version, access_token, secret_version)
       version_parameter = secret_version.empty? ? secret_version : "/#{secret_version}"
       uri = URI("https://#{vault_name}.vault.azure.net/secrets/#{secret_name}#{version_parameter}?api-version=#{vault_api_version}")

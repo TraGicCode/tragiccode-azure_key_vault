@@ -34,7 +34,11 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     return context.cached_value(normalized_secret_name) if context.cache_has_key(normalized_secret_name)
     access_token = context.cached_value('access_token')
     if access_token.nil?
-      access_token = TragicCode::Azure.get_access_token(options['metadata_api_version'])
+      access_token = if options['use_service_principal'] {
+        TragicCode::Azure.get_access_token_service_principal(options['service_principal_credentials'])
+      else
+        TragicCode::Azure.get_access_token(options['metadata_api_version'])
+      end
       context.cache('access_token', access_token)
     end
     begin

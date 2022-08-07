@@ -3,7 +3,14 @@ require_relative '../../../puppet_x/tragiccode/azure'
 Puppet::Functions.create_function(:'azure_key_vault::lookup') do
   dispatch :lookup_key do
     param 'Variant[String, Numeric]', :secret_name
-    param 'Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[String], Optional[key_replacement_token] => String}]', :options
+    param 'Struct[{
+      vault_name => String,
+      vault_api_version => String,
+      metadata_api_version => String,
+      confine_to_keys => Array[String],
+      Optional[key_replacement_token] => String,
+      Optional[service_principal_credentials] => String
+    }]', :options
     param 'Puppet::LookupContext', :context
   end
 
@@ -34,7 +41,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     return context.cached_value(normalized_secret_name) if context.cache_has_key(normalized_secret_name)
     access_token = context.cached_value('access_token')
     if access_token.nil?
-      access_token = if options['use_service_principal'] {
+      access_token = if options['service_principal_credentials']
         TragicCode::Azure.get_access_token_service_principal(options['service_principal_credentials'])
       else
         TragicCode::Azure.get_access_token(options['metadata_api_version'])

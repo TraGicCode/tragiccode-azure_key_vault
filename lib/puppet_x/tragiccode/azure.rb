@@ -19,12 +19,13 @@ module TragicCode
       JSON.parse(res.body)['access_token']
     end
 
-    def self.get_access_token_service_principal(credentials)
-      uri = URI("https://login.microsoftonline.com/#{credentials['azure_tenant_id']}/oauth2/v2.0/token")
+    def self.get_access_token_service_principal(credentials_file)
+      credentials = YAML.load_file(credentials_file)
+      uri = URI("https://login.microsoftonline.com/#{credentials.fetch('azure_tenant_id')}/oauth2/v2.0/token")
       data = {
         'grant_type': 'client_credentials',
-        'client_id': credentials['azure_client_id'],
-        'client_secret': credentials['azure_client_secret'],
+        'client_id': credentials.fetch('azure_client_id'),
+        'client_secret': credentials.fetch('azure_client_secret'),
         'scope': 'https://vault.azure.net/.default'
       }
       req = Net::HTTP::Post.new(uri.request_uri)

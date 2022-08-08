@@ -7,9 +7,7 @@
   "source": "https://github.com/TraGicCode/tragiccode-azure_key_vault",
   "project_page": "https://github.com/TraGicCode/tragiccode-azure_key_vault",
   "issues_url": "https://github.com/TraGicCode/tragiccode-azure_key_vault/issues",
-  "dependencies": [
-
-  ],
+  "dependencies": [],
   "operatingsystem_support": [
     {
       "operatingsystem": "CentOS",
@@ -53,7 +51,8 @@
         "2008 R2",
         "2012 R2",
         "2016",
-        "2019"
+        "2019",
+        "2022"
       ]
     }
   ],

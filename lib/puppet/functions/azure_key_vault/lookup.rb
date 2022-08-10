@@ -19,8 +19,14 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     return context.not_found if secret_name == 'lookup_options'
 
     confine_keys = options['confine_to_keys']
+    metadata_api_version = options['metadata_api_version']
+    service_principal_credentials = options['service_principal_credentials']
     if confine_keys
       raise ArgumentError, 'confine_to_keys must be an array' unless confine_keys.is_a?(Array)
+
+      if metadata_api_version && service_principal_credentials
+        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
+      end
 
       begin
         confine_keys = confine_keys.map { |r| Regexp.new(r) }
@@ -42,10 +48,10 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     access_token = context.cached_value('access_token')
     if access_token.nil?
       access_token = if options['service_principal_credentials']
-        TragicCode::Azure.get_access_token_service_principal(options['service_principal_credentials'])
-      else
-        TragicCode::Azure.get_access_token(options['metadata_api_version'])
-      end
+                       TragicCode::Azure.get_access_token_service_principal(options['service_principal_credentials'])
+                     else
+                       TragicCode::Azure.get_access_token(metadata_api_version)
+                     end
       context.cache('access_token', access_token)
     end
     begin

@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe 'azure_key_vault::lookup' do
+
   let(:options) do
     {
       'vault_name' => 'vault_name',
@@ -9,6 +10,7 @@ describe 'azure_key_vault::lookup' do
       'confine_to_keys' => ['^.*sensitive_azure.*'],
     }
   end
+
   let(:lookup_context) do
     environment = instance_double('environment')
     allow(environment).to receive(:name).and_return('production')
@@ -27,11 +29,13 @@ describe 'azure_key_vault::lookup' do
   it 'accepts 3 required arguments' do
     is_expected.to run.with_params.and_raise_error(ArgumentError, %r{expects 3 arguments}i)
   end
+
   it 'validates the :options hash' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', { 'key1' => 'value1' }, lookup_context
     ).and_raise_error(ArgumentError)
   end
+
   it 'uses the cache' do
     expect(lookup_context).to receive(:cache_has_key).with('profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return(true)
     expect(lookup_context).to receive(:cached_value).with('profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return('value')
@@ -39,6 +43,7 @@ describe 'azure_key_vault::lookup' do
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context
     ).and_return('value')
   end
+
   it 'caches the access token after a cache miss' do
     access_token_value = 'access_value'
     secret_value = 'secret_value'
@@ -60,7 +65,7 @@ describe 'azure_key_vault::lookup' do
     )
   end
 
-  it 'uses - as the default key_replacement_token' do
+  it "uses '-' as the default key_replacement_token" do
     secret_name = 'profile::windows::sqlserver::sensitive_azure_sql_user_password'
     access_token_value = 'access_value'
     secret_value = 'secret_value'
@@ -76,6 +81,12 @@ describe 'azure_key_vault::lookup' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => '^vault.*$' }), lookup_context
     ).and_raise_error(ArgumentError, %r{'confine_to_keys' expects an Array value}i)
+  end
+
+  it "errors when using both 'metadata_api_version' and 'service_principal_credentials'" do
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'service_principal_credentials' => '/etc/puppetlabs/puppet/azure_keyvault.yaml' }), lookup_context
+    ).and_raise_error(ArgumentError, %r{'metadata_api_version and service_principal_credentials cannot be used together'}i)
   end
 
   it 'errors when passing invalid regexes' do

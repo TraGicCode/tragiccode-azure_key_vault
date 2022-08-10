@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'azure_key_vault::lookup' do
-
   let(:options) do
     {
       'vault_name' => 'vault_name',
@@ -86,7 +85,7 @@ describe 'azure_key_vault::lookup' do
   it "errors when using both 'metadata_api_version' and 'service_principal_credentials'" do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'service_principal_credentials' => '/etc/puppetlabs/puppet/azure_keyvault.yaml' }), lookup_context
-    ).and_raise_error(ArgumentError, %r{'metadata_api_version and service_principal_credentials cannot be used together'}i)
+    ).and_raise_error(ArgumentError, %r{metadata_api_version and service_principal_credentials cannot be used together}i)
   end
 
   it 'errors when passing invalid regexes' do

@@ -19,8 +19,7 @@ module TragicCode
       JSON.parse(res.body)['access_token']
     end
 
-    def self.get_access_token_service_principal(credentials_file)
-      credentials = YAML.load_file(credentials_file)
+    def self.get_access_token_service_principal(credentials)
       uri = URI("https://login.microsoftonline.com/#{credentials.fetch('azure_tenant_id')}/oauth2/v2.0/token")
       data = {
         'grant_type': 'client_credentials',

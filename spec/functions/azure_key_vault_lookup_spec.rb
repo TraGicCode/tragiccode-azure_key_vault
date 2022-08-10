@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe 'azure_key_vault::lookup' do
-
   let(:options) do
     {
       'vault_name' => 'vault_name',

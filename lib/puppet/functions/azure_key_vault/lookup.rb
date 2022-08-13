@@ -46,6 +46,9 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       if metadata_api_version && service_principal_credentials
         raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
       end
+      if !metadata_api_version && !service_principal_credentials
+        raise ArgumentError, 'must configure at least one of metadata_api_version or service_principal_credentials'
+      end
   
       access_token = if service_principal_credentials
                       credentials = YAML.load_file(service_principal_credentials)

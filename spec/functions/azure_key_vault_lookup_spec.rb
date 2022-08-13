@@ -88,6 +88,14 @@ describe 'azure_key_vault::lookup' do
     ).and_raise_error(ArgumentError, %r{metadata_api_version and service_principal_credentials cannot be used together}i)
   end
 
+  it "errors when missing both 'metadata_api_version' and 'service_principal_credentials'" do
+    bad_options = options
+    bad_options.delete('metadata_api_version')
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', bad_options, lookup_context
+    ).and_raise_error(ArgumentError, %r{'must configure at least one of metadata_api_version or service_principal_credentials'}i)
+  end
+
   it 'errors when passing invalid regexes' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['['] }), lookup_context

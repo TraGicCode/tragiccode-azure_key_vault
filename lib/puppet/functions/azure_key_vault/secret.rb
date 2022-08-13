@@ -43,12 +43,12 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
         raise ArgumentError, 'hash must contain at least one of metadata_api_version or azure_client_id'
       end
 
-      access_token = if azure_client_id
-                      credentials = api_endpoint_hash.slice('azure_tenant_id', 'azure_client_id', 'azure_client_secret')
-                      TragicCode::Azure.get_access_token_service_principal(credentials)
-                    else
-                      TragicCode::Azure.get_access_token(metadata_api_version)
-                    end
+      if azure_client_id
+        credentials = api_endpoint_hash.slice('azure_tenant_id', 'azure_client_id', 'azure_client_secret')
+        access_token = TragicCode::Azure.get_access_token_service_principal(credentials)
+      else
+        access_token = TragicCode::Azure.get_access_token(metadata_api_version)
+      end
       cache_hash[access_token_id] = access_token
     end
 

@@ -32,8 +32,9 @@ The module requires the following:
 
 * Puppet Agent 6.0.0 or later.
 * Azure Subscription with one or more vaults already created and loaded with secrets.
-* Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
-  to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
+* Puppet Server with appropriate permissions
+  * (recommended) running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
+  * or if your Puppet server is not running in Azure, this module can also use Service Principal authentication
 
 ## How it works
 
@@ -271,6 +272,50 @@ sslcertificate { "Install-WebApp-Certificate" :
 ```
 
 **NOTE: Retrieving a specific version of a secret is currently not available via the hiera backend**
+
+### Using a Service Principal
+
+It is easier and recommended to use Managed Service Identity ( MSI ) when possible. However, in some cases you cannot, for example if your Puppet server and some of your puppet agents are not hosted in Azure.
+
+In that case, you can create a Service Principal in Azure Active Directory, assign the appropriate permissions to this Service Principal, and both the function and Hiera Backend provided in this module can authenticate to Azure Keyvault using the credentials of this Service Principal.
+
+Microsoft Azure documentation refers to this type of authentication as either "Service Principals" or "app registrations". To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
+
+#### Calling the function using a Service Principal
+
+```puppet
+$important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
+  azure_tenant_id     => '00000000-0000-1234-1234-000000000000',
+  azure_client_id     => '00000000-0000-1234-1234-000000000000',
+  azure_client_secret => 'some-secret',
+  vault_api_version   => '2016-10-01',
+})
+```
+
+#### Configuring Hiera Backend with a Service Principal
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: production-vault
+      vault_api_version: '2016-10-01'
+      service_principal_credentials: '/etc/puppetlabs/puppet/azure_key_vault_credentials.yaml'
+      key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+        - '^.*_password$'
+        - '^password.*'
+
+```
+
+Also put the credentials file in the `service_principal_credentials` path:
+
+```
+azure_tenant_id: '00000000-0000-1234-1234-000000000000'
+azure_client_id: '00000000-0000-1234-1234-000000000000'
+azure_client_secret: some-secret
+```
 
 ## Reference
 

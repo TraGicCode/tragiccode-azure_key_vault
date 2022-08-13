@@ -25,6 +25,21 @@ describe TragicCode::Azure do
     end
   end
 
+  context '.get_access_token_service_principal' do
+    let(:credentials) { { 'azure_client_id' => '', 'azure_tenant_id' => '', 'azure_client_secret' => '' } }
+
+    it 'returns a bearer token' do
+      stub_request(:post, %r{login.microsoftonline.com})
+        .to_return(body: '{"access_token": "token"}', status: 200)
+      expect(described_class.get_access_token_service_principal(credentials)).to eq('token')
+    end
+    it 'errors when the response is not 2xx' do
+      stub_request(:post, %r{login.microsoftonline.com})
+        .to_return(body: 'some_error', status: 400)
+      expect { described_class.get_access_token_service_principal(credentials) }.to raise_error('some_error')
+    end
+  end
+
   context '.get_secret' do
     it 'returns a secret' do
       vault_name = 'vault'

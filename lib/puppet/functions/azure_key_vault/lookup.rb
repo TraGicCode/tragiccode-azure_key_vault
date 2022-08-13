@@ -49,13 +49,13 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       if !metadata_api_version && !service_principal_credentials
         raise ArgumentError, 'must configure at least one of metadata_api_version or service_principal_credentials'
       end
-  
-      access_token = if service_principal_credentials
-                      credentials = YAML.load_file(service_principal_credentials)
-                      TragicCode::Azure.get_access_token_service_principal(credentials)
-                    else
-                      TragicCode::Azure.get_access_token(metadata_api_version)
-                    end
+
+      if service_principal_credentials
+        credentials = YAML.load_file(service_principal_credentials)
+        access_token = TragicCode::Azure.get_access_token_service_principal(credentials)
+      else
+        access_token = TragicCode::Azure.get_access_token(metadata_api_version)
+      end
       context.cache('access_token', access_token)
     end
     begin

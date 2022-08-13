@@ -6,7 +6,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     param 'Struct[{
       vault_name => String,
       vault_api_version => String,
-      metadata_api_version => String,
+      Optional[metadata_api_version] => String,
       confine_to_keys => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String
@@ -19,14 +19,8 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     return context.not_found if secret_name == 'lookup_options'
 
     confine_keys = options['confine_to_keys']
-    metadata_api_version = options['metadata_api_version']
-    service_principal_credentials = options['service_principal_credentials']
     if confine_keys
       raise ArgumentError, 'confine_to_keys must be an array' unless confine_keys.is_a?(Array)
-
-      if metadata_api_version && service_principal_credentials
-        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
-      end
 
       begin
         confine_keys = confine_keys.map { |r| Regexp.new(r) }
@@ -47,12 +41,18 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     return context.cached_value(normalized_secret_name) if context.cache_has_key(normalized_secret_name)
     access_token = context.cached_value('access_token')
     if access_token.nil?
-      access_token = if options['service_principal_credentials']
-                       service_principal_credentials = YAML.load_file(options['service_principal_credentials'])
-                       TragicCode::Azure.get_access_token_service_principal(service_principal_credentials)
-                     else
-                       TragicCode::Azure.get_access_token(metadata_api_version)
-                     end
+      metadata_api_version = options['metadata_api_version']
+      service_principal_credentials = options['service_principal_credentials']
+      if metadata_api_version && service_principal_credentials
+        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
+      end
+  
+      access_token = if service_principal_credentials
+                      credentials = YAML.load_file(service_principal_credentials)
+                      TragicCode::Azure.get_access_token_service_principal(credentials)
+                    else
+                      TragicCode::Azure.get_access_token(metadata_api_version)
+                    end
       context.cache('access_token', access_token)
     end
     begin

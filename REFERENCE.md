@@ -21,7 +21,7 @@ The azure_key_vault::lookup function.
 
 The azure_key_vault::lookup function.
 
-Returns: `Any`
+Returns: `Variant[Sensitive, Undef]`
 
 ##### `secret_name`
 
@@ -57,7 +57,7 @@ Returns: `Sensitive[String]` Returns the secret as a String wrapped with the Sen
 
 Data type: `String`
 
-Name of the vault in your Azure subcription.
+Name of the vault in your Azure subscription.
 
 ##### `secret_name`
 

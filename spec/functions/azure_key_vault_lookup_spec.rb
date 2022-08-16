@@ -67,7 +67,7 @@ describe 'azure_key_vault::lookup' do
     )
   end
 
-# rubocop:disable RSpec/NamedSubject
+  # rubocop:disable RSpec/NamedSubject
   it "uses '-' as the default key_replacement_token" do
     secret_name = 'profile::windows::sqlserver::sensitive_azure_sql_user_password'
     access_token_value = 'access_value'

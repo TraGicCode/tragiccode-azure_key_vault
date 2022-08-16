@@ -2,7 +2,7 @@ require_relative '../../../puppet_x/tragiccode/azure'
 
 # Retrieves secrets from Azure's Key Vault.
 Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions::InternalFunction) do
-  # @param vault_name Name of the vault in your Azure subcription.
+  # @param vault_name Name of the vault in your Azure subscription.
   # @param secret_name Name of the secret to be retrieved.
   # @param api_endpoint_hash A Hash with API endpoint and authentication information
   # @param secret_version The version of the secret you want to retrieve.  This parameter is optional and if not passed the default behavior is to retrieve the latest version.
@@ -19,6 +19,7 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
       Optional[azure_client_secret] => String
     }]', :api_endpoint_hash
     optional_param 'String', :secret_version
+    return_type 'Sensitive[String]'
   end
 
   def secret(cache, vault_name, secret_name, api_endpoint_hash, secret_version = '')

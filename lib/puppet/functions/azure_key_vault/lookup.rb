@@ -12,6 +12,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       Optional[service_principal_credentials] => String
     }]', :options
     param 'Puppet::LookupContext', :context
+    return_type 'Variant[Sensitive, Undef]'
   end
 
   def lookup_key(secret_name, options, context)
@@ -38,7 +39,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
 
     normalized_secret_name = TragicCode::Azure.normalize_object_name(secret_name, options['key_replacement_token'] || '-')
     context.explain { "Using normalized KeyVault secret key for lookup: #{normalized_secret_name}" }
-    return context.cached_value(normalized_secret_name) if context.cache_has_key(normalized_secret_name)
+    return Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cached_value(normalized_secret_name)) if context.cache_has_key(normalized_secret_name)
     access_token = context.cached_value('access_token')
     if access_token.nil?
       metadata_api_version = options['metadata_api_version']
@@ -75,6 +76,6 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       context.not_found
       return
     end
-    context.cache(normalized_secret_name, secret_value)
+    Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cache(normalized_secret_name, secret_value))
   end
 end

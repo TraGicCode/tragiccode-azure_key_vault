@@ -35,14 +35,17 @@ describe 'azure_key_vault::lookup' do
     ).and_raise_error(ArgumentError)
   end
 
+  # rubocop:disable RSpec/NamedSubject
   it 'uses the cache' do
     expect(lookup_context).to receive(:cache_has_key).with('profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return(true)
     expect(lookup_context).to receive(:cached_value).with('profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return('value')
-    is_expected.to run.with_params(
-      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context
-    ).and_return('value')
+
+    expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context).unwrap).to eq 'value'
   end
 
+  # rubocop:enable RSpec/NamedSubject
+
+  # rubocop:disable RSpec/NamedSubject
   it 'caches the access token after a cache miss' do
     access_token_value = 'access_value'
     secret_value = 'secret_value'
@@ -52,10 +55,10 @@ describe 'azure_key_vault::lookup' do
     expect(lookup_context).to receive(:cache).with('access_token', access_token_value).ordered
     expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
     expect(lookup_context).to receive(:cache).and_return(secret_value).ordered
-    is_expected.to run.with_params(
-      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context
-    ).and_return(secret_value)
+
+    expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context).unwrap).to eq secret_value
   end
+  # rubocop:enable RSpec/NamedSubject
 
   it 'call context.not_found for the lookup_options key' do
     expect(lookup_context).to receive(:not_found)
@@ -64,6 +67,7 @@ describe 'azure_key_vault::lookup' do
     )
   end
 
+# rubocop:disable RSpec/NamedSubject
   it "uses '-' as the default key_replacement_token" do
     secret_name = 'profile::windows::sqlserver::sensitive_azure_sql_user_password'
     access_token_value = 'access_value'
@@ -71,10 +75,10 @@ describe 'azure_key_vault::lookup' do
     expect(TragicCode::Azure).to receive(:normalize_object_name).with(secret_name, '-')
     expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
     expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
-    is_expected.to run.with_params(
-      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context
-    ).and_return(secret_value)
+
+    expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context).unwrap).to eq secret_value
   end
+  # rubocop:enable RSpec/NamedSubject
 
   it 'errors when confine_to_keys is no array' do
     is_expected.to run.with_params(
@@ -102,15 +106,17 @@ describe 'azure_key_vault::lookup' do
     ).and_raise_error(ArgumentError, %r{creating regexp failed with}i)
   end
 
+  # rubocop:disable RSpec/NamedSubject
   it 'returns the key if regex matches confine_to_keys' do
     access_token_value = 'access_value'
     secret_value = 'secret_value'
     expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
     expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
-    is_expected.to run.with_params(
-      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context
-    ).and_return(secret_value)
+
+    expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context).unwrap)
+      .to eq secret_value
   end
+  # rubocop:enable RSpec/NamedSubject
 
   it 'does not return the key if regex does not match confine_to_keys' do
     access_token_value = 'access_value'
@@ -136,4 +142,16 @@ describe 'azure_key_vault::lookup' do
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context
     )
   end
+
+  # rubocop:disable RSpec/NamedSubject
+  it 'returns the secret wrapped in the sensitive data type' do
+    access_token_value = 'access_value'
+    secret_value = 'secret_value'
+    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+
+    expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context))
+      .to be_an_instance_of(Puppet::Pops::Types::PSensitiveType::Sensitive)
+  end
+  # rubocop:enable RSpec/NamedSubject
 end

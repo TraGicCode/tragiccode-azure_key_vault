@@ -26,7 +26,7 @@ describe TragicCode::Azure do
   end
 
   context '.get_access_token_service_principal' do
-    let(:credentials) { { 'azure_client_id' => '', 'azure_tenant_id' => '', 'azure_client_secret' => '' } }
+    let(:credentials) { { 'client_id' => '', 'tenant_id' => '', 'client_secret' => '' } }
 
     it 'returns a bearer token' do
       stub_request(:post, %r{login.microsoftonline.com})

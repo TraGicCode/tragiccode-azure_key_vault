@@ -20,11 +20,11 @@ module TragicCode
     end
 
     def self.get_access_token_service_principal(credentials)
-      uri = URI("https://login.microsoftonline.com/#{credentials.fetch('azure_tenant_id')}/oauth2/v2.0/token")
+      uri = URI("https://login.microsoftonline.com/#{credentials.fetch('tenant_id')}/oauth2/v2.0/token")
       data = {
         'grant_type': 'client_credentials',
-        'client_id': credentials.fetch('azure_client_id'),
-        'client_secret': credentials.fetch('azure_client_secret'),
+        'client_id': credentials.fetch('client_id'),
+        'client_secret': credentials.fetch('client_secret'),
         'scope': 'https://vault.azure.net/.default'
       }
       req = Net::HTTP::Post.new(uri.request_uri)

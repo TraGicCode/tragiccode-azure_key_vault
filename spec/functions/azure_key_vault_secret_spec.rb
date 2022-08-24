@@ -28,9 +28,9 @@ describe 'azure_key_vault::secret' do
         'metadata_api_version' => 'test',
         'vault_api_version' => 'test',
         'service_principal_credentials' => {
-          'azure_tenant_id' => 'test_tenant',
-          'azure_client_id' => 'test_client',
-          'azure_client_secret' => 'test_secret'
+          'tenant_id' => 'test_tenant',
+          'client_id' => 'test_client',
+          'client_secret' => 'test_secret'
         }
       }
       is_expected.to run.with_params(
@@ -107,9 +107,9 @@ describe 'azure_key_vault::secret' do
       {
         'vault_api_version' => 'test_version',
         'service_principal_credentials' => {
-          'azure_tenant_id' => 'test_tenant',
-          'azure_client_id' => 'test_client',
-          'azure_client_secret' => 'test_secret'
+          'tenant_id' => 'test_tenant',
+          'client_id' => 'test_client',
+          'client_secret' => 'test_secret'
         }
       }
     end

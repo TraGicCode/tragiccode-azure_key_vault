@@ -15,9 +15,9 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
       vault_api_version => String,
       Optional[metadata_api_version] => String,
       Optional[service_principal_credentials] => Struct[{
-        azure_tenant_id => String,
-        azure_client_id => String,
-        azure_client_secret => String
+        tenant_id => String,
+        client_id => String,
+        client_secret => String
       }]
     }]', :api_endpoint_hash
     optional_param 'String', :secret_version
@@ -31,7 +31,7 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
     Puppet.debug("metadata_api_version: #{api_endpoint_hash['metadata_api_version']}")
     Puppet.debug("vault_api_version: #{api_endpoint_hash['vault_api_version']}")
     if api_endpoint_hash['service_principal_credentials']
-      partial_credentials = api_endpoint_hash['service_principal_credentials'].slice('azure_tenant_id', 'azure_client_id')
+      partial_credentials = api_endpoint_hash['service_principal_credentials'].slice('tenant_id', 'client_id')
       Puppet.debug("service_principal_credentials: #{partial_credentials}")
     end
     cache_hash = cache.retrieve(self)

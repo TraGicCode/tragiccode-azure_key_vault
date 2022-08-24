@@ -14,9 +14,11 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
     param 'Struct[{
       vault_api_version => String,
       Optional[metadata_api_version] => String,
-      Optional[azure_tenant_id] => String,
-      Optional[azure_client_id] => String,
-      Optional[azure_client_secret] => String
+      Optional[service_principal_credentials] => Struct[{
+        azure_tenant_id => String,
+        azure_client_id => String,
+        azure_client_secret => String
+      }]
     }]', :api_endpoint_hash
     optional_param 'String', :secret_version
     return_type 'Sensitive[String]'
@@ -28,26 +30,26 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
     Puppet.debug("secret_version: #{secret_version}")
     Puppet.debug("metadata_api_version: #{api_endpoint_hash['metadata_api_version']}")
     Puppet.debug("vault_api_version: #{api_endpoint_hash['vault_api_version']}")
-    Puppet.debug("azure_tenant_id: #{api_endpoint_hash['azure_tenant_id']}")
-    Puppet.debug("azure_client_id: #{api_endpoint_hash['azure_client_id']}")
+    if api_endpoint_hash['service_principal_credentials']
+      partial_credentials = api_endpoint_hash['service_principal_credentials'].slice('azure_tenant_id', 'azure_client_id')
+      Puppet.debug("service_principal_credentials: #{partial_credentials}")
+    end
     cache_hash = cache.retrieve(self)
     access_token_id = :"access_token_#{vault_name}"
     unless cache_hash.key?(access_token_id)
       Puppet.debug("retrieving access token since it's not in the cache")
       metadata_api_version = api_endpoint_hash['metadata_api_version']
-      azure_client_id = api_endpoint_hash['azure_client_id']
-      if metadata_api_version && azure_client_id
-        raise ArgumentError, 'metadata_api_version and azure_client_id cannot be used together'
-      end
-      if !metadata_api_version && !azure_client_id
-        raise ArgumentError, 'hash must contain at least one of metadata_api_version or azure_client_id'
+      service_principal_credentials = api_endpoint_hash['service_principal_credentials']
+      if metadata_api_version && service_principal_credentials
+        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
       end
 
-      if azure_client_id
-        credentials = api_endpoint_hash.slice('azure_tenant_id', 'azure_client_id', 'azure_client_secret')
-        access_token = TragicCode::Azure.get_access_token_service_principal(credentials)
-      else
+      if service_principal_credentials
+        access_token = TragicCode::Azure.get_access_token_service_principal(service_principal_credentials)
+      elsif metadata_api_version
         access_token = TragicCode::Azure.get_access_token(metadata_api_version)
+      else
+        raise ArgumentError, 'hash must contain at least one of metadata_api_version or service_principal_credentials'
       end
       cache_hash[access_token_id] = access_token
     end

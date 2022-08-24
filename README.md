@@ -285,10 +285,12 @@ Microsoft Azure documentation refers to this type of authentication as either "S
 
 ```puppet
 $important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
-  azure_tenant_id     => '00000000-0000-1234-1234-000000000000',
-  azure_client_id     => '00000000-0000-1234-1234-000000000000',
-  azure_client_secret => 'some-secret',
-  vault_api_version   => '2016-10-01',
+  vault_api_version             => '2016-10-01',
+  service_principal_credentials => {
+    tenant_id     => '00000000-0000-1234-1234-000000000000',
+    client_id     => '00000000-0000-1234-1234-000000000000',
+    client_secret => 'some-secret',
+  }
 })
 ```
 
@@ -312,9 +314,9 @@ $important_secret = azure_key_vault::secret('production-vault', 'important-secre
 Also put the credentials file in the `service_principal_credentials` path:
 
 ```
-azure_tenant_id: '00000000-0000-1234-1234-000000000000'
-azure_client_id: '00000000-0000-1234-1234-000000000000'
-azure_client_secret: some-secret
+tenant_id: '00000000-0000-1234-1234-000000000000'
+client_id: '00000000-0000-1234-1234-000000000000'
+client_secret: some-secret
 ```
 
 ## Reference

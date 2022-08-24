@@ -1,5 +1,0 @@
-#
-# 
-# 
-
-lookup('secret-name')

@@ -9,6 +9,7 @@ describe 'azure_key_vault::lookup' do
       'confine_to_keys' => ['^.*sensitive_azure.*'],
     }
   end
+
   let(:lookup_context) do
     environment = instance_double('environment')
     allow(environment).to receive(:name).and_return('production')
@@ -27,6 +28,7 @@ describe 'azure_key_vault::lookup' do
   it 'accepts 3 required arguments' do
     is_expected.to run.with_params.and_raise_error(ArgumentError, %r{expects 3 arguments}i)
   end
+
   it 'validates the :options hash' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', { 'key1' => 'value1' }, lookup_context
@@ -40,6 +42,7 @@ describe 'azure_key_vault::lookup' do
 
     expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context).unwrap).to eq 'value'
   end
+
   # rubocop:enable RSpec/NamedSubject
 
   # rubocop:disable RSpec/NamedSubject
@@ -65,7 +68,7 @@ describe 'azure_key_vault::lookup' do
   end
 
   # rubocop:disable RSpec/NamedSubject
-  it 'uses - as the default key_replacement_token' do
+  it "uses '-' as the default key_replacement_token" do
     secret_name = 'profile::windows::sqlserver::sensitive_azure_sql_user_password'
     access_token_value = 'access_value'
     secret_value = 'secret_value'
@@ -81,6 +84,20 @@ describe 'azure_key_vault::lookup' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => '^vault.*$' }), lookup_context
     ).and_raise_error(ArgumentError, %r{'confine_to_keys' expects an Array value}i)
+  end
+
+  it "errors when using both 'metadata_api_version' and 'service_principal_credentials'" do
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'service_principal_credentials' => 'path' }), lookup_context
+    ).and_raise_error(ArgumentError, %r{metadata_api_version and service_principal_credentials cannot be used together}i)
+  end
+
+  it "errors when missing both 'metadata_api_version' and 'service_principal_credentials'" do
+    bad_options = options
+    bad_options.delete('metadata_api_version')
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', bad_options, lookup_context
+    ).and_raise_error(ArgumentError, %r{must configure at least one of metadata_api_version or service_principal_credentials}i)
   end
 
   it 'errors when passing invalid regexes' do

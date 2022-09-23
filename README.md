@@ -11,6 +11,7 @@
 
 1. [Description](#description)
 1. [Setup](#setup)
+1. [Managed Service Identity (MSI) vs Service Principal Credentials](#managed-service-identity-msi-vs-service-principal-credentials)
 1. [How it works](#how-it-works)
     * [Puppet Function](#puppet-function)
     * [Hiera Backend](#hiera-backend)
@@ -18,6 +19,7 @@
 1. [Usage](#usage)
     * [Embedding a secret in a file](#embedding-a-secret-in-a-file)
     * [Retrieving a specific version of a secret](#retrieving-a-specific-version-of-a-secret)
+    * [Retrieving a certificate](#retrieving-a-certificate)
 1. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
 1. [Development - Guide for contributing to the module](#development)
 
@@ -32,19 +34,29 @@ The module requires the following:
 
 * Puppet Agent 6.0.0 or later.
 * Azure Subscription with one or more vaults already created and loaded with secrets.
-* Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
+* One of the following authentication strategies
+  * Managed Service Identity ( MSI )
+    * Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
   to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
+  * Service Principal
+    * Following the required steps to setup a Service Principal.  To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
+
+# Managed Service Identity (MSI) vs Service Principal Credentials
+
+This module provides 2 ways for users to authenticate with azure key vault and pull secrets. These 2 options are Managed Service Identity ( MSI ) and Service Principal Credentials.  We highly recommend you utilize Managed Service Identity over service principal credentials whenever possible.  This is because you do not have to manage and secure a file on our machines that contain credentials!  In some cases, Managed Service Identity ( MSI ) might not be an option for you.  One example of this is  if your Puppet server and some of your puppet agents are not hosted in Azure.  In that case, you can create a Service Principal in Azure Active Directory, assign the appropriate permissions to this Service Principal, and both the function and Hiera Backend provided in this module can authenticate to Azure Keyvault using the credentials of this Service Principal.
 
 ## How it works
 
 ### Puppet Function
 
-This module contains a Puppet 4 function that allows you to securely retrieve secrets from Azure Key Vault.  In order to get started simply call the function in your manifests passing in the required parameters:
+This module contains a Puppet 4 function that allows you to securely retrieve secrets from Azure Key Vault.  In order to get started simply call the function in your manifests passing in the required parameters.
+
+#### Using Managed Service Identity ( MSI )
 
 ```puppet
 $important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
-  metadata_api_version => '2018-04-02',
   vault_api_version    => '2016-10-01',
+  metadata_api_version => '2018-04-02',
 })
 ```
 
@@ -57,9 +69,29 @@ In the above example the api_versions hash is important.  It is pinning both of 
 * Instance Metadata Service Versions ( https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service )
 * Vault Versions ( TBD )
 
+
+#### Using Service Principal Credentials
+
+
+```puppet
+$important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
+  vault_api_version    => '2016-10-01',
+  service_principal_credentials => {
+    tenant_id     => '00000000-0000-1234-1234-000000000000',
+    client_id     => '00000000-0000-1234-1234-000000000000',
+    client_secret => lookup('azure_client_secret'),
+  }
+})
+```
+
+This example show how to utilize service principal credentials if you for some reason are unable to use Managed Service Identity ( MSI ) at your organization.  The client_secret must be of type "Sensitive".  Please ensure you configure hiera to return the value wrapped in this type as this is what the secret function expects to ensure there is possibilty of leaking the client_secret.
+
 ### Hiera Backend
 
 This module contains a Hiera 5 backend that allows you to securely retrieve secrets from Azure key vault and use them in hiera.
+
+
+#### Using Managed Service Identity ( MSI )
 
 Add a new entry to the `hierarchy` hash in `hiera.yaml` providing the following required lookup options:
 
@@ -75,6 +107,33 @@ Add a new entry to the `hierarchy` hash in `hiera.yaml` providing the following 
         - '^azure_.*'
         - '^.*_password$'
         - '^password.*'
+```
+
+#### Using Service Principal Credentials
+
+To utilize service principal credentials in hiera simply replace `metadata_api_version` with `service_principal_credentials` and ensure it points to a valid yaml file that contains the service principal credentials you would like to use.
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: production-vault
+      vault_api_version: '2016-10-01'
+      service_principal_credentials: '/etc/puppetlabs/puppet/azure_key_vault_credentials.yaml'
+      key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+        - '^.*_password$'
+        - '^password.*'
+
+```
+
+Below is the format of the file that is expected to contain your service principal credentials.
+
+```yaml
+tenant_id: '00000000-0000-1234-1234-000000000000'
+client_id: '00000000-0000-1234-1234-000000000000'
+client_secret: some-secret
 ```
 
 To retrieve a secret in puppet code you can use the `lookup` function:
@@ -109,6 +168,8 @@ Alternatively a custom trusted fact can be included [in the certificate request]
         - '^.*_password$'
         - '^password.*'
 ```
+
+**NOTE: While the above examples show manual lookups happening, it's recommended and considered a best practice to utilize Hiera's automatic parameter lookup (APL) within your puppet code**
 
 ### What is confine_to_keys?
 

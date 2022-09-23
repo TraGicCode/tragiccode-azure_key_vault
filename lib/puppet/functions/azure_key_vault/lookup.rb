@@ -3,7 +3,14 @@ require_relative '../../../puppet_x/tragiccode/azure'
 Puppet::Functions.create_function(:'azure_key_vault::lookup') do
   dispatch :lookup_key do
     param 'Variant[String, Numeric]', :secret_name
-    param 'Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[String], Optional[key_replacement_token] => String}]', :options
+    param 'Struct[{
+      vault_name => String,
+      vault_api_version => String,
+      Optional[metadata_api_version] => String,
+      confine_to_keys => Array[String],
+      Optional[key_replacement_token] => String,
+      Optional[service_principal_credentials] => String
+    }]', :options
     param 'Puppet::LookupContext', :context
     return_type 'Variant[Sensitive, Undef]'
   end
@@ -35,7 +42,21 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     return Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cached_value(normalized_secret_name)) if context.cache_has_key(normalized_secret_name)
     access_token = context.cached_value('access_token')
     if access_token.nil?
-      access_token = TragicCode::Azure.get_access_token(options['metadata_api_version'])
+      metadata_api_version = options['metadata_api_version']
+      service_principal_credentials = options['service_principal_credentials']
+      if metadata_api_version && service_principal_credentials
+        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
+      end
+      if !metadata_api_version && !service_principal_credentials
+        raise ArgumentError, 'must configure at least one of metadata_api_version or service_principal_credentials'
+      end
+
+      if service_principal_credentials
+        credentials = YAML.load_file(service_principal_credentials)
+        access_token = TragicCode::Azure.get_access_token_service_principal(credentials)
+      else
+        access_token = TragicCode::Azure.get_access_token(metadata_api_version)
+      end
       context.cache('access_token', access_token)
     end
     begin

@@ -17,7 +17,14 @@ Type: Ruby 4.x API
 
 The azure_key_vault::lookup function.
 
-#### `azure_key_vault::lookup(Variant[String, Numeric] $secret_name, Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[String], Optional[key_replacement_token] => String}] $options, Puppet::LookupContext $context)`
+#### `azure_key_vault::lookup(Variant[String, Numeric] $secret_name, Struct[{
+      vault_name => String,
+      vault_api_version => String,
+      Optional[metadata_api_version] => String,
+      confine_to_keys => Array[String],
+      Optional[key_replacement_token] => String,
+      Optional[service_principal_credentials] => String
+    }] $options, Puppet::LookupContext $context)`
 
 The azure_key_vault::lookup function.
 
@@ -31,7 +38,14 @@ Data type: `Variant[String, Numeric]`
 
 ##### `options`
 
-Data type: `Struct[{vault_name => String, vault_api_version => String, metadata_api_version => String, confine_to_keys => Array[String], Optional[key_replacement_token] => String}]`
+Data type: `Struct[{
+      vault_name => String,
+      vault_api_version => String,
+      Optional[metadata_api_version] => String,
+      confine_to_keys => Array[String],
+      Optional[key_replacement_token] => String,
+      Optional[service_principal_credentials] => String
+    }]`
 
 
 
@@ -47,7 +61,15 @@ Type: Ruby 4.x API
 
 Retrieves secrets from Azure's Key Vault.
 
-#### `azure_key_vault::secret(String $vault_name, String $secret_name, Hash $api_versions_hash, Optional[String] $secret_version)`
+#### `azure_key_vault::secret(String $vault_name, String $secret_name, Struct[{
+      vault_api_version => String,
+      Optional[metadata_api_version] => String,
+      Optional[service_principal_credentials] => Struct[{
+        tenant_id => String,
+        client_id => String,
+        client_secret => String
+      }]
+    }] $api_endpoint_hash, Optional[String] $secret_version)`
 
 Retrieves secrets from Azure's Key Vault.
 
@@ -65,11 +87,19 @@ Data type: `String`
 
 Name of the secret to be retrieved.
 
-##### `api_versions_hash`
+##### `api_endpoint_hash`
 
-Data type: `Hash`
+Data type: `Struct[{
+      vault_api_version => String,
+      Optional[metadata_api_version] => String,
+      Optional[service_principal_credentials] => Struct[{
+        tenant_id => String,
+        client_id => String,
+        client_secret => String
+      }]
+    }]`
 
-A Hash of the exact versions of the metadata_api_version and vault_api_version to use.
+A Hash with API endpoint and authentication information
 
 ##### `secret_version`
 

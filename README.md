@@ -32,20 +32,25 @@ The module requires the following:
 
 * Puppet Agent 6.0.0 or later.
 * Azure Subscription with one or more vaults already created and loaded with secrets.
-* Puppet Server with appropriate permissions
-  * (recommended) running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
-  * or if your Puppet server is not running in Azure, this module can also use Service Principal authentication
+* One of the following authentication strategies
+  * Managed Service Identity ( MSI )
+    * Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
+  to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
+  * Service Principal
+    * Following the required steps to setup a Service Principal.  To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
 
 ## How it works
 
 ### Puppet Function
 
-This module contains a Puppet 4 function that allows you to securely retrieve secrets from Azure Key Vault.  In order to get started simply call the function in your manifests passing in the required parameters:
+This module contains a Puppet 4 function that allows you to securely retrieve secrets from Azure Key Vault.  In order to get started simply call the function in your manifests passing in the required parameters.
+
+#### Using Managed Service Identity ( MSI )
 
 ```puppet
 $important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
-  metadata_api_version => '2018-04-02',
   vault_api_version    => '2016-10-01',
+  metadata_api_version => '2018-04-02',
 })
 ```
 
@@ -58,9 +63,27 @@ In the above example the api_versions hash is important.  It is pinning both of 
 * Instance Metadata Service Versions ( https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service )
 * Vault Versions ( TBD )
 
+
+#### Using Service Principal
+
+
+```puppet
+$important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
+  vault_api_version    => '2016-10-01',
+  service_principal_credentials => {
+    tenant_id     => '00000000-0000-1234-1234-000000000000',
+    client_id     => '00000000-0000-1234-1234-000000000000',
+    client_secret => Sensitive('00000000-0000-1234-1234-000000000000'),
+  }
+})
+```
+
 ### Hiera Backend
 
 This module contains a Hiera 5 backend that allows you to securely retrieve secrets from Azure key vault and use them in hiera.
+
+
+#### Using Managed Service Identity ( MSI )
 
 Add a new entry to the `hierarchy` hash in `hiera.yaml` providing the following required lookup options:
 
@@ -76,6 +99,30 @@ Add a new entry to the `hierarchy` hash in `hiera.yaml` providing the following 
         - '^azure_.*'
         - '^.*_password$'
         - '^password.*'
+```
+
+#### Using Service Principal
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: production-vault
+      vault_api_version: '2016-10-01'
+      service_principal_credentials: '/etc/puppetlabs/puppet/azure_keyvault.yaml'
+      key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+        - '^.*_password$'
+        - '^password.*'
+```
+
+azure_keyvault.yaml
+
+```yaml
+tenant_id: '00000000-0000-1234-1234-000000000000'
+client_id: '00000000-0000-1234-1234-000000000000'
+client_secret: some-secret
 ```
 
 To retrieve a secret in puppet code you can use the `lookup` function:

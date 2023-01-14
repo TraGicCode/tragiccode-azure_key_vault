@@ -144,11 +144,14 @@ notify { 'lookup':
 }
 ```
 
-This function can also be used in hiera files, for example to set class parameters:
+The alias function can also be used in hiera files, for example to set class parameters:
 
 ```yaml
-some_class::password: "%{lookup('important-secret')}"
+some_class::password: "%{alias('important-secret')}"
 ```
+
+**NOTE: The alias function must be used in the above example.  Attempting to use the lookup function inside of your hiera files will not work.  This is because, when using lookup, the result is interpolated as a string.  Since this module is safe by default, it always returns secrets as Sensitive[String]. The reason we have to use alias is because it will preserve the datatype of the value.  More information can be found [here](https://www.puppet.com/docs/puppet/7/hiera_merging.html#interpolation_functions)**
+
 
 You can use a fact to specify different vaults for different groups of nodes. It is
 recommended to use a trusted fact such as trusted.extensions.pp_environment as these facts

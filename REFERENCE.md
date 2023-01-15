@@ -6,12 +6,12 @@
 
 ### Functions
 
-* [`azure_key_vault::lookup`](#azure_key_vaultlookup)
-* [`azure_key_vault::secret`](#azure_key_vaultsecret): Retrieves secrets from Azure's Key Vault.
+* [`azure_key_vault::lookup`](#azure_key_vault--lookup)
+* [`azure_key_vault::secret`](#azure_key_vault--secret): Retrieves secrets from Azure's Key Vault.
 
 ## Functions
 
-### <a name="azure_key_vaultlookup"></a>`azure_key_vault::lookup`
+### <a name="azure_key_vault--lookup"></a>`azure_key_vault::lookup`
 
 Type: Ruby 4.x API
 
@@ -38,14 +38,18 @@ Data type: `Variant[String, Numeric]`
 
 ##### `options`
 
-Data type: `Struct[{
+Data type:
+
+```puppet
+Struct[{
       vault_name => String,
       vault_api_version => String,
       Optional[metadata_api_version] => String,
       confine_to_keys => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String
-    }]`
+    }]
+```
 
 
 
@@ -55,7 +59,7 @@ Data type: `Puppet::LookupContext`
 
 
 
-### <a name="azure_key_vaultsecret"></a>`azure_key_vault::secret`
+### <a name="azure_key_vault--secret"></a>`azure_key_vault::secret`
 
 Type: Ruby 4.x API
 
@@ -89,7 +93,10 @@ Name of the secret to be retrieved.
 
 ##### `api_endpoint_hash`
 
-Data type: `Struct[{
+Data type:
+
+```puppet
+Struct[{
       vault_api_version => String,
       Optional[metadata_api_version] => String,
       Optional[service_principal_credentials] => Struct[{
@@ -97,7 +104,8 @@ Data type: `Struct[{
         client_id => String,
         client_secret => String
       }]
-    }]`
+    }]
+```
 
 A Hash with API endpoint and authentication information
 

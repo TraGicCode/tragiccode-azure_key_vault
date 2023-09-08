@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v3.2.0](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/v3.2.0) (2023-09-07)
+
+[Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/v3.1.1...v3.2.0)
+
+### Added
+
+- \(GH-107\) Add puppet 8 support [\#108](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/108) ([TraGicCode](https://github.com/TraGicCode))
+
 ## [v3.1.1](https://github.com/tragiccode/tragiccode-azure_key_vault/tree/v3.1.1) (2023-01-15)
 
 [Full Changelog](https://github.com/tragiccode/tragiccode-azure_key_vault/compare/v3.1.0...v3.1.1)

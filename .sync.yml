@@ -11,7 +11,6 @@ Gemfile:
     ":development":
       - gem: github_changelog_generator
         condition: "Gem::Version.new(RUBY_VERSION.dup) >= Gem::Version.new('2.2.2')"
-      - gem: 'puppet-strings'
       - gem: 'webmock'
 
 Rakefile:
@@ -40,13 +39,6 @@ appveyor.yml:
 .travis.yml:
   delete: true
 
-.github/workflows/auto_release.yml:
-  unmanaged: false
-
 .github/workflows/release.yml:
-  unmanaged: false
-
-.github/workflows/spec.yml:
-  checks: 'syntax lint metadata_lint check:symlinks check:git_ignore check:dot_underscore check:test_file rubocop'
-  unmanaged: false
+  unmanaged: true
 

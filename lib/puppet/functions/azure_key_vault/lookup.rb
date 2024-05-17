@@ -7,6 +7,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       vault_name => String,
       vault_api_version => String,
       Optional[metadata_api_version] => String,
+      Optional[onprem_agent_api_version] => String,
       confine_to_keys => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String
@@ -44,18 +45,20 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     if access_token.nil?
       metadata_api_version = options['metadata_api_version']
       service_principal_credentials = options['service_principal_credentials']
-      if metadata_api_version && service_principal_credentials
-        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
-      end
-      if !metadata_api_version && !service_principal_credentials
-        raise ArgumentError, 'must configure at least one of metadata_api_version or service_principal_credentials'
-      end
+      onprem_agent_api_version = options['onprem_agent_api_version']
+
+      TragicCode::Helpers.validate_optional_args(
+        metadata_api_version, service_principal_credentials, onprem_agent_api_version)
 
       if service_principal_credentials
         credentials = YAML.load_file(service_principal_credentials)
         access_token = TragicCode::Azure.get_access_token_service_principal(credentials)
-      else
+      elsif metadata_api_version
         access_token = TragicCode::Azure.get_access_token(metadata_api_version)
+      elsif onprem_agent_api_version
+        access_token = TragicCode::AzureOnPrem.get_access_token(onprem_agent_api_version)
+      else
+        raise ArgumentError, 'hash must contain at least one of metadata_api_version, service_principal_credentials, onprem_agent_api_version'
       end
       context.cache('access_token', access_token)
     end

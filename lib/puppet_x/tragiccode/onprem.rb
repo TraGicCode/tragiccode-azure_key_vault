@@ -29,7 +29,7 @@ module TragicCode
 
     def self.get_access_token(api_version)
       key_file = AzureOnPrem.get_key_location(api_version)
-      raise 'Bad key file returned by agent :o' unless File.exists?(key_file)
+      raise "Bad key file returned by agent: '#{key_file}'" unless File.exists?(key_file)
       key = File.read(key_file)
 
       uri, req = AzureOnPrem.create_request(api_version)

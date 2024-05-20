@@ -1,4 +1,6 @@
+require_relative '../../../puppet_x/tragiccode/common'
 require_relative '../../../puppet_x/tragiccode/azure'
+require_relative '../../../puppet_x/tragiccode/onprem'
 
 # Retrieves secrets from Azure's Key Vault.
 Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions::InternalFunction) do
@@ -41,9 +43,9 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
       Puppet.debug("retrieving access token since it's not in the cache")
       metadata_api_version = api_endpoint_hash['metadata_api_version']
       service_principal_credentials = api_endpoint_hash['service_principal_credentials']
-      onprem_agent_api_version = options['onprem_agent_api_version']
+      onprem_agent_api_version = api_endpoint_hash['onprem_agent_api_version']
 
-      TragicCode::Helpers.validate_optional_args(
+      TragicCode::Helpers.validate_optional_exclusive_args(
         metadata_api_version, service_principal_credentials, onprem_agent_api_version)
 
 

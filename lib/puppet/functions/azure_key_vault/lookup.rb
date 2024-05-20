@@ -1,4 +1,6 @@
+require_relative '../../../puppet_x/tragiccode/common'
 require_relative '../../../puppet_x/tragiccode/azure'
+require_relative '../../../puppet_x/tragiccode/onprem'
 
 Puppet::Functions.create_function(:'azure_key_vault::lookup') do
   dispatch :lookup_key do
@@ -47,7 +49,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       service_principal_credentials = options['service_principal_credentials']
       onprem_agent_api_version = options['onprem_agent_api_version']
 
-      TragicCode::Helpers.validate_optional_args(
+      TragicCode::Helpers.validate_optional_exclusive_args(
         metadata_api_version, service_principal_credentials, onprem_agent_api_version)
 
       if service_principal_credentials

@@ -12,15 +12,18 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       Optional[onprem_agent_api_version] => String,
       confine_to_keys => Array[String],
       Optional[key_replacement_token] => String,
-      Optional[service_principal_credentials] => String
+      Optional[service_principal_credentials] => String,
+      Optional[return_sensitive_type] => Boolean
     }]', :options
     param 'Puppet::LookupContext', :context
-    return_type 'Variant[Sensitive, Undef]'
   end
 
   def lookup_key(secret_name, options, context)
     # This is a reserved key name in hiera
     return context.not_found if secret_name == 'lookup_options'
+
+    # return Sensitive type as a default return type. otherwise return string!
+    return_sensitive_type = options.fetch('return_sensitive_type', true)
 
     confine_keys = options['confine_to_keys']
     if confine_keys
@@ -42,7 +45,15 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
 
     normalized_secret_name = TragicCode::Azure.normalize_object_name(secret_name, options['key_replacement_token'] || '-')
     context.explain { "Using normalized KeyVault secret key for lookup: #{normalized_secret_name}" }
-    return Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cached_value(normalized_secret_name)) if context.cache_has_key(normalized_secret_name)
+
+    if context.cache_has_key(normalized_secret_name)
+      if return_sensitive_type
+        return Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cached_value(normalized_secret_name))
+      else
+        return context.cached_value(normalized_secret_name)
+      end
+    end
+
     access_token = context.cached_value('access_token')
     if access_token.nil?
       metadata_api_version = options['metadata_api_version']
@@ -81,6 +92,11 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       context.not_found
       return
     end
-    Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cache(normalized_secret_name, secret_value))
+
+    if return_sensitive_type
+      Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cache(normalized_secret_name, secret_value))
+    else
+      context.cache(normalized_secret_name, secret_value)
+    end
   end
 end

@@ -89,8 +89,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     end
 
     if secret_value.nil?
-      context.not_found
-      return
+      raise Puppet::Error, "The secret '#{secret_name}' could not be found in a vault '#{options['vault_name']}'!!!"
     end
 
     if return_sensitive_type

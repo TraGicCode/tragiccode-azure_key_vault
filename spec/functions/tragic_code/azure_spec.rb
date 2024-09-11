@@ -57,10 +57,10 @@ describe TragicCode::Azure do
 
     it 'throws error with response body when response is not 2xx when getting the auth token' do
       File.stub(:read).and_return('magical-token-from-file')
-
+      # rubocop:disable Layout/LineLength
       stub_request(:get, %r{127.0.0.1})
         .to_return(body: '{"access_token": "token"}', status: 401, headers: { 'Www-Authenticate' => 'Basic realm=C:\\ProgramData\\AzureConnectedMachineAgent\\Tokens\\f1da0584-97f4-42fd-a671-879ad3de86fa.key' })
-
+      # rubocop:enable Layout/LineLength
       stub_request(:get, %r{127.0.0.1})
         .with(headers: { 'Authorization' => 'Basic magical-token-from-file' })
         .to_return(body: 'some_error', status: 400)

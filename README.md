@@ -11,7 +11,7 @@
 
 1. [Description](#description)
 1. [Setup](#setup)
-1. [Managed Service Identity (MSI) vs Service Principal Credentials](#managed-service-identity-msi-vs-service-principal-credentials)
+1. [Managed Service Identity (MSI) vs Managed Identity for Azure Arc-enabled servers vs Service Principal Credentials](#managed-service-identity-msi-vs-managed-identity-for-azure-arc-enabled-servers-vs-service-principal-credentials)
 1. [How it works](#how-it-works)
     * [Puppet Function](#puppet-function)
     * [Hiera Backend](#hiera-backend)
@@ -38,12 +38,14 @@ The module requires the following:
   * Managed Service Identity ( MSI )
     * Puppet Server running on a machine with Managed Service Identity ( MSI ) and assigned the appropriate permissions
   to pull secrets from the vault. To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-windows-vm-access-nonaad
+  * Managed Identity for Azure Arc-enabled servers
+    * Follow Microsofts documentation on setting up an Azure Arc-enabled server.  To learn more or get help with this please visit https://learn.microsoft.com/en-us/azure/azure-arc/servers/learn/quick-enable-hybrid-vm
   * Service Principal
     * Following the required steps to setup a Service Principal.  To learn more or get help with this please visit https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app
 
-# Managed Service Identity (MSI) vs Service Principal Credentials
+# Managed Service Identity (MSI) vs Managed Identity for Azure Arc-enabled servers vs Service Principal Credentials
 
-This module provides 2 ways for users to authenticate with azure key vault and pull secrets. These 2 options are Managed Service Identity ( MSI ) and Service Principal Credentials.  We highly recommend you utilize Managed Service Identity over service principal credentials whenever possible.  This is because you do not have to manage and secure a file on our machines that contain credentials!  In some cases, Managed Service Identity ( MSI ) might not be an option for you.  One example of this is  if your Puppet server and some of your puppet agents are not hosted in Azure.  In that case, you can create a Service Principal in Azure Active Directory, assign the appropriate permissions to this Service Principal, and both the function and Hiera Backend provided in this module can authenticate to Azure Keyvault using the credentials of this Service Principal.
+This module provides 3 ways for users to authenticate with azure key vault and pull secrets. These 3 options are Managed Service Identity ( MSI ), Managed Identity for Azure Arc-enabled servers, Service Principal Credentials.  We highly recommend you utilize Managed Service Identity over service principal credentials whenever possible.  This is because you do not have to manage and secure a file on our machines that contain credentials!  In some cases, Managed Service Identity ( MSI ) might not be an option for you.  One example of this is  if your Puppet server and some of your puppet agents are not hosted in Azure.  In this case, we highly recommend you look at and use Azure Arc-enabled servers.  If for some reason this cannot be done, you should fallback to Service Principal Credentials.  This would require you to create a Service Principal in Azure Active Directory, assign the appropriate permissions to this Service Principal, and both the function and Hiera Backend provided in this module can authenticate to Azure Keyvault using the credentials of this Service Principal.
 
 ## How it works
 
@@ -69,9 +71,19 @@ In the above example the api_versions hash is important.  It is pinning both of 
 * Instance Metadata Service Versions ( https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service )
 * Vault Versions ( TBD )
 
+#### Using Managed Identity for Azure Arc-enabled servers
+
+```puppet
+$important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
+  vault_api_version            => '2016-10-01',
+  metadata_api_version         => '2018-04-02',
+  use_azure_arc_authentication => true,
+})
+```
+
+This example shows how to utilize Managed Identity for Azure Arc-enabled servers. Similar to the above, the metadata endpoint on the Azure Arc-enabled service will be accessed to generate a secret file on the local machine. The secret within the file will be read and used to authenticate the machine to the secret in the corresponding vault you requested.
 
 #### Using Service Principal Credentials
-
 
 ```puppet
 $important_secret = azure_key_vault::secret('production-vault', 'important-secret', {
@@ -90,7 +102,6 @@ This example show how to utilize service principal credentials if you for some r
 
 This module contains a Hiera 5 backend that allows you to securely retrieve secrets from Azure key vault and use them in hiera.
 
-
 #### Using Managed Service Identity ( MSI )
 
 Add a new entry to the `hierarchy` hash in `hiera.yaml` providing the following required lookup options:
@@ -101,6 +112,25 @@ Add a new entry to the `hierarchy` hash in `hiera.yaml` providing the following 
     options:
       vault_name: production-vault
       vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+        - '^.*_password$'
+        - '^password.*'
+```
+
+#### Using Managed Identity for Azure Arc-enabled servers
+
+To utilize Managed Identity for Azure Arc-enabled servers in hiera simply add `use_azure_arc_authentication` with the value of `true`.
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: production-vault
+      vault_api_version: '2016-10-01'
+      use_azure_arc_authentication: true
       metadata_api_version: '2018-04-02'
       key_replacement_token: '-'
       confine_to_keys:

@@ -4,7 +4,7 @@ require 'json'
 module TragicCode
   # Azure API functions
   class Azure
-    @@AZURE_ARC_INSTANCE_METADATA_ENPOINT_IP = '127.0.0.1'.freeze
+    @azure_arc_instance_metadata_endpoint_ip = '127.0.0.1'.freeze
 
     def self.normalize_object_name(object_name, replacement)
       object_name.gsub(%r{[^0-9a-zA-Z-]}, replacement)
@@ -12,7 +12,7 @@ module TragicCode
 
     def self.get_access_token_azure_arc(api_version)
       # Generate File and Read Challenge Token
-      uri = URI("http://#{@@AZURE_ARC_INSTANCE_METADATA_ENPOINT_IP}/metadata/identity/oauth2/token?api-version=#{api_version}&resource=https%3A%2F%2Fvault.azure.net")
+      uri = URI("http://#{@azure_arc_instance_metadata_endpoint_ip}/metadata/identity/oauth2/token?api-version=#{api_version}&resource=https%3A%2F%2Fvault.azure.net")
       req = Net::HTTP::Get.new(uri.request_uri)
       req['Metadata'] = 'true'
       res = Net::HTTP.start(uri.hostname, uri.port) do |http|
@@ -27,7 +27,7 @@ module TragicCode
       challenge_token = File.read(challenge_token_file_path)
 
       # Get Access Token using challenge token
-      internal_get_access_token(api_version, @@AZURE_ARC_INSTANCE_METADATA_ENPOINT_IP, { 'Authorization' => "Basic #{challenge_token}" })
+      internal_get_access_token(api_version, @azure_arc_instance_metadata_endpoint_ip, { 'Authorization' => "Basic #{challenge_token}" })
     end
 
     def self.get_access_token(api_version)

@@ -4,7 +4,7 @@
 name: "Module Release"
 
 on:
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
   release:

@@ -1,9 +1,71 @@
-name: "Publish module"
+# This is a generic workflow for releasing a Puppet module.
+# It requires that the caller sets `secrets: inherit` to ensure
+# that secrets are visible from steps in this workflow.
+name: "Module Release"
 
 on:
-  workflow_dispatch:
- 
+  workflow_call:
+
 jobs:
-  release: 
-    uses: "puppetlabs/cat-github-actions/.github/workflows/module_release.yml@main"
-    secrets: "inherit"
+  release:
+    name: "Release"
+    runs-on: "ubuntu-latest"
+    if: github.repository_owner == 'TraGicCode'
+
+    steps:
+
+      - name: "Set up Ruby"
+        uses: "actions/setup-ruby@v1"
+        with:
+          ruby-version: "3.1"
+
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+        with:
+          ref: "${{ github.ref }}"
+          clean: true
+          fetch-depth: 0
+
+      - name: "Get version"
+        id: "get_version"
+        run: |
+          ruby <<-EOF >> $GITHUB_OUTPUT
+            require "json"
+            version = JSON.parse(File.read("metadata.json"))["version"]
+
+            # from https://github.com/voxpupuli/metadata-json-lint/blob/b5e68049c6be58aa63263357bb0dcad8635a6829/lib/metadata-json-lint/schema.rb#L141-L150
+            numeric = '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)' # Major . Minor . Patch
+            pre = '(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?' # Prerelease
+            build = '(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?' # Build
+            full = numeric + pre + build
+            semver_regex = /\A#{full}\Z/
+            if version&.match?(semver_regex)
+              puts "version=#{version}"
+            else
+              raise "Version #{version} is invalid. Exiting workflow."
+            end
+          EOF
+
+      - name: "PDK build"
+        uses: "docker://puppet/pdk:nightly"
+        with:
+          args: "build"
+
+      - name: "Generate release notes"
+        run: |
+          export GH_HOST=github.com
+          gh extension install chelnak/gh-changelog
+          gh changelog get --latest > OUTPUT.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Create release"
+        run: |
+          gh release create v${{ steps.get_version.outputs.version }} --title v${{ steps.get_version.outputs.version }} -F OUTPUT.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Publish module"
+        uses: "docker://puppet/pdk:nightly"
+        with:
+          args: 'release publish --forge-token ${{ secrets.FORGE_API_KEY }} --force'

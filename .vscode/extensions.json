@@ -1,5 +1,6 @@
 {
   "recommendations": [
-    "puppet.puppet-vscode"
+    "puppet.puppet-vscode",
+    "Shopify.ruby-lsp"
   ]
 }

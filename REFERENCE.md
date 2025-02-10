@@ -23,7 +23,8 @@ The azure_key_vault::lookup function.
       Optional[metadata_api_version] => String,
       confine_to_keys => Array[String],
       Optional[key_replacement_token] => String,
-      Optional[service_principal_credentials] => String
+      Optional[service_principal_credentials] => String,
+      Optional[use_azure_arc_authentication] => Boolean
     }] $options, Puppet::LookupContext $context)`
 
 The azure_key_vault::lookup function.
@@ -47,7 +48,8 @@ Struct[{
       Optional[metadata_api_version] => String,
       confine_to_keys => Array[String],
       Optional[key_replacement_token] => String,
-      Optional[service_principal_credentials] => String
+      Optional[service_principal_credentials] => String,
+      Optional[use_azure_arc_authentication] => Boolean
     }]
 ```
 
@@ -72,7 +74,8 @@ Retrieves secrets from Azure's Key Vault.
         tenant_id => String,
         client_id => String,
         client_secret => String
-      }]
+      }],
+      Optional[use_azure_arc_authentication] => Boolean
     }] $api_endpoint_hash, Optional[String] $secret_version)`
 
 Retrieves secrets from Azure's Key Vault.
@@ -103,7 +106,8 @@ Struct[{
         tenant_id => String,
         client_id => String,
         client_secret => String
-      }]
+      }],
+      Optional[use_azure_arc_authentication] => Boolean
     }]
 ```
 

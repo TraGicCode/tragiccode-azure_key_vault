@@ -23,6 +23,14 @@ describe 'azure_key_vault::secret' do
       is_expected.to run.with_params.and_raise_error(ArgumentError, %r{expects between 3 and 4 arguments}i)
     end
 
+    it "errors when missing both 'metadata_api_version' and 'service_principal_credentials'" do
+      bad_hash = api_versions_hash
+      bad_hash.delete('metadata_api_version')
+      is_expected.to run.with_params(
+        vault_name, secret_name, bad_hash
+      ).and_raise_error(%r{hash must contain at least one of metadata_api_version or service_principal_credentials})
+    end
+
     it "errors when using both 'metadata_api_version' and 'service_principal_credentials'" do
       bad_hash = {
         'metadata_api_version' => 'test',
@@ -36,14 +44,6 @@ describe 'azure_key_vault::secret' do
       is_expected.to run.with_params(
         vault_name, secret_name, bad_hash
       ).and_raise_error(%r{metadata_api_version and service_principal_credentials cannot be used together})
-    end
-
-    it "errors when missing both 'metadata_api_version' and 'service_principal_credentials'" do
-      bad_hash = api_versions_hash
-      bad_hash.delete('metadata_api_version')
-      is_expected.to run.with_params(
-        vault_name, secret_name, bad_hash
-      ).and_raise_error(%r{hash must contain at least one of metadata_api_version or service_principal_credentials})
     end
   end
 

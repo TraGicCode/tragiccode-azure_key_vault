@@ -18,7 +18,8 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
         tenant_id => String,
         client_id => String,
         client_secret => String
-      }]
+      }],
+      Optional[use_azure_arc_authentication] => Boolean
     }]', :api_endpoint_hash
     optional_param 'String', :secret_version
     return_type 'Sensitive[String]'
@@ -34,23 +35,40 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
       partial_credentials = api_endpoint_hash['service_principal_credentials'].slice('tenant_id', 'client_id')
       Puppet.debug("service_principal_credentials: #{partial_credentials}")
     end
+    Puppet.debug("use_azure_arc_authentication: #{api_endpoint_hash['use_azure_arc_authentication']}")
     cache_hash = cache.retrieve(self)
     access_token_id = :"access_token_#{vault_name}"
     unless cache_hash.key?(access_token_id)
       Puppet.debug("retrieving access token since it's not in the cache")
       metadata_api_version = api_endpoint_hash['metadata_api_version']
       service_principal_credentials = api_endpoint_hash['service_principal_credentials']
-      if metadata_api_version && service_principal_credentials
-        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
+      use_azure_arc_authentication = api_endpoint_hash['use_azure_arc_authentication']
+
+      if !metadata_api_version && !service_principal_credentials
+        raise ArgumentError, 'hash must contain at least one of metadata_api_version or service_principal_credentials.'
       end
 
-      if service_principal_credentials
-        access_token = TragicCode::Azure.get_access_token_service_principal(service_principal_credentials)
-      elsif metadata_api_version
-        access_token = TragicCode::Azure.get_access_token(metadata_api_version)
-      else
-        raise ArgumentError, 'hash must contain at least one of metadata_api_version or service_principal_credentials'
+      # Service principal validation
+      if metadata_api_version && service_principal_credentials
+        raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together.'
       end
+
+      # Azure arc validation
+      if service_principal_credentials && use_azure_arc_authentication
+        raise ArgumentError, 'service_principal_credentials and use_azure_arc_authentication cannot be used together.'
+      end
+
+      if !metadata_api_version && use_azure_arc_authentication
+        raise ArgumentError, 'use_azure_arc_authentication must be used together with metadata_api_version.'
+      end
+
+      access_token = if service_principal_credentials
+                       TragicCode::Azure.get_access_token_service_principal(service_principal_credentials)
+                     elsif use_azure_arc_authentication
+                       TragicCode::Azure.get_access_token_azure_arc(metadata_api_version)
+                     else
+                       TragicCode::Azure.get_access_token(metadata_api_version)
+                     end
       cache_hash[access_token_id] = access_token
     end
 

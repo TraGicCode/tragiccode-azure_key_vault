@@ -9,7 +9,8 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       Optional[metadata_api_version] => String,
       confine_to_keys => Array[String],
       Optional[key_replacement_token] => String,
-      Optional[service_principal_credentials] => String
+      Optional[service_principal_credentials] => String,
+      Optional[use_azure_arc_authentication] => Boolean
     }]', :options
     param 'Puppet::LookupContext', :context
     return_type 'Variant[Sensitive, Undef]'
@@ -44,6 +45,8 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
     if access_token.nil?
       metadata_api_version = options['metadata_api_version']
       service_principal_credentials = options['service_principal_credentials']
+      use_azure_arc_authentication = options['use_azure_arc_authentication']
+
       if metadata_api_version && service_principal_credentials
         raise ArgumentError, 'metadata_api_version and service_principal_credentials cannot be used together'
       end
@@ -54,6 +57,8 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       if service_principal_credentials
         credentials = YAML.load_file(service_principal_credentials)
         access_token = TragicCode::Azure.get_access_token_service_principal(credentials)
+      elsif use_azure_arc_authentication
+        access_token = TragicCode::Azure.get_access_token_azure_arc(metadata_api_version)
       else
         access_token = TragicCode::Azure.get_access_token(metadata_api_version)
       end

@@ -1,10 +1,7 @@
-# This is a generic workflow for releasing a Puppet module.
-# It requires that the caller sets `secrets: inherit` to ensure
-# that secrets are visible from steps in this workflow.
 name: "Module Release"
 
 on:
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   release:
@@ -15,7 +12,7 @@ jobs:
     steps:
 
       - name: "Set up Ruby"
-        uses: "actions/setup-ruby@v1"
+        uses: "ruby/setup-ruby@v1"
         with:
           ruby-version: "3.1"
 

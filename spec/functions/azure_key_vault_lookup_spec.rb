@@ -86,6 +86,12 @@ describe 'azure_key_vault::lookup' do
     ).and_raise_error(ArgumentError, %r{'confine_to_keys' expects an Array value}i)
   end
 
+  it 'errors when strip_from_keys is no array' do
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'strip_from_keys' => '^vault.*$' }), lookup_context
+    ).and_raise_error(ArgumentError, %r{'strip_from_keys' expects an Array value}i)
+  end
+
   it "errors when using both 'metadata_api_version' and 'service_principal_credentials'" do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'service_principal_credentials' => 'path' }), lookup_context
@@ -129,6 +135,50 @@ describe 'azure_key_vault::lookup' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_sql_user_password', options.merge({ 'confine_to_keys' => ['^sensitive_azure.*$'] }), lookup_context
     )
+  end
+
+  describe 'strip_from_keys' do
+    [
+      {
+        input_secret_name: 'profile::windows::sqlserver::azure_sql_user_password',
+        expected_secret_name: 'profile--windows--sqlserver--sql-user-password',
+        secret_value: 'secret_value',
+        strip_from_keys: ['azure_'],
+        confine_to_keys: ['^.*azure_.*']
+      },
+      {
+        input_secret_name: 'profile::windows::sqlserver::azure_sql_user_password',
+        expected_secret_name: 'azure-sql-user-password',
+        secret_value: 'secret_value',
+        strip_from_keys: ['^profile::.*::'],
+        confine_to_keys: ['^.*azure_.*']
+      },
+    ].each do |test_case|
+      it "strips the patterns #{test_case[:strip_from_keys]} from the secret_name changing it from #{test_case[:input_secret_name]} to #{test_case[:expected_secret_name]}" do
+        access_token_value = 'access_value'
+
+        expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+
+        expect(TragicCode::Azure).to receive(:get_secret).with(
+          options['vault_name'],
+          test_case[:expected_secret_name],
+          options['vault_api_version'],
+          access_token_value,
+          '',
+        ).and_return(test_case[:secret_value])
+
+        # rubocop:disable RSpec/NamedSubject
+        expect(subject.execute(
+          test_case[:input_secret_name],
+          options.merge({
+                          'confine_to_keys' => test_case[:confine_to_keys],
+            'strip_from_keys' => test_case[:strip_from_keys]
+                        }),
+          lookup_context,
+        ).unwrap).to eq test_case[:secret_value]
+        # rubocop:enable RSpec/NamedSubject
+      end
+    end
   end
 
   it 'calls context.not_found when secret is not found in vault' do

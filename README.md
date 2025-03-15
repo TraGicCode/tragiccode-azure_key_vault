@@ -5,8 +5,6 @@
 [![Puppet Forge Downloads](https://img.shields.io/puppetforge/dt/tragiccode/azure_key_vault.svg)](https://forge.puppetlabs.com/tragiccode/azure_key_vault)
 [![Puppet Forge Endorsement](https://img.shields.io/puppetforge/e/tragiccode/azure_key_vault.svg)](https://forge.puppetlabs.com/tragiccode/azure_key_vault)
 
-
-
 #### Table of Contents
 
 1. [Description](#description)
@@ -166,22 +164,7 @@ client_id: '00000000-0000-1234-1234-000000000000'
 client_secret: some-secret
 ```
 
-To retrieve a secret in puppet code you can use the `lookup` function:
-
-```puppet
-notify { 'lookup':
-  message => lookup('important-secret'),
-}
-```
-
-The alias function can also be used in hiera files, for example to set class parameters:
-
-```yaml
-some_class::password: "%{alias('important-secret')}"
-```
-
-**NOTE: The alias function must be used in the above example.  Attempting to use the lookup function inside of your hiera files will not work.  This is because, when using lookup, the result is interpolated as a string.  Since this module is safe by default, it always returns secrets as Sensitive[String]. The reason we have to use alias is because it will preserve the datatype of the value.  More information can be found [here](https://www.puppet.com/docs/puppet/7/hiera_merging.html#interpolation_functions)**
-
+#### Using facts for the vault name
 
 You can use a fact to specify different vaults for different groups of nodes. It is
 recommended to use a trusted fact such as trusted.extensions.pp_environment as these facts
@@ -201,6 +184,24 @@ Alternatively a custom trusted fact can be included [in the certificate request]
         - '^.*_password$'
         - '^password.*'
 ```
+
+#### Manual lookups
+
+To retrieve a secret in puppet code you can use the `lookup` function:
+
+```puppet
+notify { 'lookup':
+  message => lookup('important-secret'),
+}
+```
+
+The alias function can also be used in hiera files, for example to set class parameters:
+
+```yaml
+some_class::password: "%{alias('important-secret')}"
+```
+
+**NOTE: The alias function must be used in the above example.  Attempting to use the lookup function inside of your hiera files will not work.  This is because, when using lookup, the result is interpolated as a string.  Since this module is safe by default, it always returns secrets as Sensitive[String]. The reason we have to use alias is because it will preserve the datatype of the value.  More information can be found [here](https://www.puppet.com/docs/puppet/7/hiera_merging.html#interpolation_functions)**
 
 **NOTE: While the above examples show manual lookups happening, it's recommended and considered a best practice to utilize Hiera's automatic parameter lookup (APL) within your puppet code**
 
@@ -230,7 +231,7 @@ As an example, if you defined your confine_to_keys as shown below, hiera will on
 
 KeyVault secret names can only contain the characters `0-9`, `a-z`, `A-Z`, and `-`.
 
-When relying on automatic parameter lookup, this is almost always going to contain the module delimiter (`::`) or underscores.
+When relying on automatic parameter lookup (APL), this is almost always going to contain the module delimiter (`::`) or underscores.
 
 This module will automatically convert the variable name to a valid value by replacing every invalid character with the `key_replacement_token` value, which defaults to `-`.
 
@@ -239,6 +240,60 @@ For example, the hiera variable `puppetdb::master::config::puppetdb_server` will
 When troubleshooting, you can run hiera from the commandline with the `--explain` option to see the key name being used :
 
       Using normalized KeyVault secret key for lookup: puppetdb--master--config--puppetdb-server
+
+### What is strip_from_keys?
+
+The `strip_from_keys` option allows you to specify one or more patterns to be stripped from the secret name just before looking up the secret in Azure Key Vault. To understand how this is useful, let's walk through an example.
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: "prod-key-vault"
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
+      confine_to_keys:
+        - '^azure_.*'
+```
+
+In the example above, `confine_to_keys` is used to scope certain secrets for lookup in Azure Key Vault, ensuring they are retrieved only when they truly exist there. However, as a side effect, `confine_to_keys` influences the secret name. In this case, the Azure Key Vault named "prod-key-vault" would need to have a secret named "profile--windows--sqlserver--azure-sql-user-password".
+
+To prevent this naming requirement, the `strip_from_keys` option was introduced. It allows you to remove specific patterns from the key just before lookup in Azure Key Vault. Below is an updated example demonstrating how `strip_from_keys` can be applied.
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: "prod-key-vault"
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
+      strip_from_keys:
+        - 'azure_'
+      confine_to_keys:
+        - '^azure_.*'
+```
+
+Now, with `strip_from_keys`, the "azure_" string pattern is removed from the secret name just before the lookup occurs. This ensures that the system searches for a secret named "profile--windows--sqlserver--sql-user-password" instead of "profile--windows--sqlserver--azure-sql-user-password" in the Azure Key Vault named "prod-key-vault".
+
+How flexible can this get?  Below shows an example of how you "could" remove profile::* from all your keys!
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: "prod-key-vault"
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
+      strip_from_keys:
+        - '^profile::.*::'
+      confine_to_keys:
+        - '^azure_.*'
+```
+
+A lookup to 'profile::windows::sqlserver::azure_sql_user_password' or 'profile::linux::blah::blah_again::some_secret' would end up searching for secrets named azure_sql_user_password and some_secret in your Azure Key Vault named "prod-key-vault".
 
 ## How it's secure by default
 

@@ -22,6 +22,7 @@ The azure_key_vault::lookup function.
       vault_api_version => String,
       Optional[metadata_api_version] => String,
       confine_to_keys => Array[String],
+      Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String,
       Optional[use_azure_arc_authentication] => Boolean
@@ -47,6 +48,7 @@ Struct[{
       vault_api_version => String,
       Optional[metadata_api_version] => String,
       confine_to_keys => Array[String],
+      Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String,
       Optional[use_azure_arc_authentication] => Boolean

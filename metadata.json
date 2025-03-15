@@ -1,6 +1,6 @@
 {
   "name": "tragiccode-azure_key_vault",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "author": "tragiccode",
   "summary": "The azure_key_vault module allows you to easily fetch secrets securely within your puppet manifests.",
   "license": "Apache-2.0",

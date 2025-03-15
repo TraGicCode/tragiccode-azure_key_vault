@@ -83,7 +83,7 @@
     "azure key vault",
     "azure vault"
   ],
-  "pdk-version": "3.2.0",
-  "template-url": "https://github.com/puppetlabs/pdk-templates.git#main",
-  "template-ref": "heads/main-0-g8842cf7"
+  "pdk-version": "3.4.0",
+  "template-url": "https://github.com/puppetlabs/pdk-templates#main",
+  "template-ref": "tags/3.4.0.3-0-g8fb22fc"
 }

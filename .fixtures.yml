@@ -3,11 +3,4 @@
 ---
 fixtures:
   forge_modules:
-  repositories:
-    provision: 'https://github.com/puppetlabs/provision.git'
-    puppet_agent: 'https://github.com/puppetlabs/puppetlabs-puppet_agent.git'
-    facts: 'https://github.com/puppetlabs/puppetlabs-facts.git'
-  # Should go away when Attempting to work around PDK-1137(https://tickets.puppetlabs.com/browse/PDK-1137)
-  # is resolved.
-  symlinks:
-    azure_key_vault: '#{source_dir}'
+#     stdlib: "puppetlabs/stdlib"

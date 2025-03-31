@@ -27,7 +27,7 @@ describe TragicCode::Azure do
 
   context '.get_access_token_azure_arc' do
     it 'returns a bearer token' do
-      File.stub(:read).and_return('magical-token-from-file')
+      allow(File).to receive(:read).and_return('magical-token-from-file')
 
       stub_request(:get, %r{127.0.0.1})
         .to_return(
@@ -56,7 +56,7 @@ describe TragicCode::Azure do
     end
 
     it 'throws error with response body when response is not 2xx when getting the auth token' do
-      File.stub(:read).and_return('magical-token-from-file')
+      allow(File).to receive(:read).and_return('magical-token-from-file')
       # rubocop:disable Layout/LineLength
       stub_request(:get, %r{127.0.0.1})
         .to_return(body: '{"access_token": "token"}', status: 401, headers: { 'Www-Authenticate' => 'Basic realm=C:\\ProgramData\\AzureConnectedMachineAgent\\Tokens\\f1da0584-97f4-42fd-a671-879ad3de86fa.key' })

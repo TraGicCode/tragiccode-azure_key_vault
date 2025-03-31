@@ -295,6 +295,37 @@ How flexible can this get?  Below shows an example of how you "could" remove pro
 
 A lookup to 'profile::windows::sqlserver::azure_sql_user_password' or 'profile::linux::blah::blah_again::some_secret' would end up searching for secrets named azure_sql_user_password and some_secret in your Azure Key Vault named "prod-key-vault".
 
+### What is prefixes?
+
+Prefixes are an optional feature that allow you to create a "hierarchy" similar to the YAML backend built into Puppet. This enables you to configure node-specific secrets and/or create a customized lookup hierarchy. It is also useful if you are migrating from HashiCorp Hiera Vault to Azure Key Vault, as this behavior is similar to that of the [HashiCorp hiera_lookup puppet module](https://forge.puppet.com/modules/petems/hiera_vault/readme).
+
+
+Let's walk through an example to see how this works. If you wanted the ability to configure node-specific secrets but fall back on a "common/shared" secret when none are configured, you can set up the prefixes as shown below:
+
+```yaml
+  - name: 'Azure Key Vault Secrets'
+    lookup_key: azure_key_vault::lookup
+    options:
+      vault_name: secrets-vault
+      vault_api_version: '2016-10-01'
+      metadata_api_version: '2018-04-02'
+      key_replacement_token: '-'
+      prefixes: 
+        - nodes--%{trusted.hostname}--
+        - common--
+      confine_to_keys:
+        - '^azure_.*'
+```
+
+If a Puppet catalog is being compiled for a node with the `trusted.hostname` fact set to `WIN-SQL01.domain.com`, the following lookups would occur in the azure vault named `secrets-vault`:
+
+1. Check for a secret named `nodes--WIN-SQL-domain-com--profile--windows--sqlserver--sensitive-azure-sql-user-password`. If it exists, cache and return the secret. If not, continue to the next level in the hierarchy.
+
+2. Check for a secret named `common--profile--windows--sqlserver--sensitive-azure-sql-user-password`. If it exists, cache and return the secret. If it does not exist, return nothing and proceed to the next configured lookup if one exists in the hiera.yaml file.
+
+**NOTE: The prefixes are always normalized using the [key_replacement_token](#what-is-key_replacement_token). This is because certain facts (such as a machine's hostname) may contain characters that are not supported as part of a secret's name. This normalization prevents failures and avoids forcing users to make difficult decisions, such as changing a node's hostname, which is not ideal.**
+
+
 ## How it's secure by default
 
 In order to prevent accidental leakage of your secrets throughout all of the locations puppet stores information the returned value of the `azure_key_vault::secret` function & Hiera backend return a string wrapped in a Sensitive data type.  Lets look at an example of what this means and why it's important.  Below is an example of pulling a secret and trying to output the value in a notice function.

@@ -25,7 +25,8 @@ The azure_key_vault::lookup function.
       Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String,
-      Optional[use_azure_arc_authentication] => Boolean
+      Optional[use_azure_arc_authentication] => Boolean,
+      Optional[prefixes] => Array[String],
     }] $options, Puppet::LookupContext $context)`
 
 The azure_key_vault::lookup function.
@@ -51,7 +52,8 @@ Struct[{
       Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String,
-      Optional[use_azure_arc_authentication] => Boolean
+      Optional[use_azure_arc_authentication] => Boolean,
+      Optional[prefixes] => Array[String],
     }]
 ```
 

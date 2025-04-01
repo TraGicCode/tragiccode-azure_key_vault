@@ -60,7 +60,7 @@ describe 'azure_key_vault::lookup' do
   end
   # rubocop:enable RSpec/NamedSubject
 
-  it 'call context.not_found for the lookup_options key' do
+  it 'calls context.not_found for the lookup_options key' do
     expect(lookup_context).to receive(:not_found)
     is_expected.to run.with_params(
       'lookup_options', options, lookup_context
@@ -80,13 +80,13 @@ describe 'azure_key_vault::lookup' do
   end
   # rubocop:enable RSpec/NamedSubject
 
-  it 'errors when confine_to_keys is no array' do
+  it 'errors when `confine_to_keys` is no array' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => '^vault.*$' }), lookup_context
     ).and_raise_error(ArgumentError, %r{'confine_to_keys' expects an Array value}i)
   end
 
-  it 'errors when strip_from_keys is no array' do
+  it 'errors when `strip_from_keys` is no array' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'strip_from_keys' => '^vault.*$' }), lookup_context
     ).and_raise_error(ArgumentError, %r{'strip_from_keys' expects an Array value}i)
@@ -96,6 +96,12 @@ describe 'azure_key_vault::lookup' do
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'service_principal_credentials' => 'path' }), lookup_context
     ).and_raise_error(ArgumentError, %r{metadata_api_version and service_principal_credentials cannot be used together}i)
+  end
+
+  it 'errors when `prefixes` is no array' do
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => 'common--' }), lookup_context
+    ).and_raise_error(ArgumentError, %r{'prefixes' expects an Array value}i)
   end
 
   it "errors when missing both 'metadata_api_version' and 'service_principal_credentials'" do
@@ -204,4 +210,92 @@ describe 'azure_key_vault::lookup' do
       .to be_an_instance_of(Puppet::Pops::Types::PSensitiveType::Sensitive)
   end
   # rubocop:enable RSpec/NamedSubject
+
+  describe 'prefixes' do
+    it 'calls context.not_found when secret is not found in vault' do
+      # Arrange
+      access_token_value = 'access_value'
+      expect(lookup_context).to receive(:not_found)
+      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+      allow(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+      # This works but not sure if it's a good practice
+      # expect(TragicCode::Azure).to receive(:get_secret).exactly(2).times.and_return(nil)
+
+      expect(TragicCode::Azure).to receive(:get_secret).exactly(2).times
+      is_expected.to run.with_params(
+        'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--%{trusted.hostname}--', 'common--'] }), lookup_context
+      )
+    end
+
+    # rubocop:disable RSpec/NamedSubject
+    it 'returns the key if found using the last prefix' do
+      access_token_value = 'access_value'
+      secret_value = 'secret_value'
+      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+      allow(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+      allow(TragicCode::Azure).to receive(:get_secret).with(
+          options['vault_name'],
+          'common--profile--windows--sqlserver--sensitive-azure-sql-user-password',
+          options['vault_api_version'],
+          access_token_value,
+          '',
+        ).and_return('secret_value')
+
+      expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--%{trusted.hostname}--', 'common--'] }), lookup_context).unwrap)
+        .to eq secret_value
+    end
+    # rubocop:enable RSpec/NamedSubject
+
+    # rubocop:disable RSpec/NamedSubject
+    it 'returns the key if found using the first prefix' do
+      access_token_value = 'access_value'
+      secret_value = 'secret_value'
+      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+      allow(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+      allow(TragicCode::Azure).to receive(:get_secret).with(
+          options['vault_name'],
+          'nodes--WIN-P-01-domain-com--profile--windows--sqlserver--sensitive-azure-sql-user-password',
+          options['vault_api_version'],
+          access_token_value,
+          '',
+        ).and_return('secret_value')
+
+      expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--WIN_P-01.domain.com--', 'common--'] }), lookup_context).unwrap)
+        .to eq secret_value
+    end
+    # rubocop:enable RSpec/NamedSubject
+
+    # rubocop:disable RSpec/NamedSubject
+    # If someone uses a puppet fact in their one of their prefixes (EX: 'nodes--%{trusted.hostname}--') instead of erroring out
+    # and forcing them to update the fact ( change the node name ) lets just normalize all prefixes
+    it 'normalizes prefixes to prevent issues for users' do
+      access_token_value = 'access_value'
+      secret_value = 'secret_value'
+      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+      expect(TragicCode::Azure).to receive(:get_secret).with(
+          options['vault_name'],
+          'nodes--WIN-P-01-domain-com--profile--windows--sqlserver--sensitive-azure-sql-user-password',
+          options['vault_api_version'],
+          access_token_value,
+          '',
+        ).and_return('secret_value')
+
+      expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--WIN_P-01.domain.com--'] }), lookup_context).unwrap)
+        .to eq secret_value
+    end
+    # rubocop:enable RSpec/NamedSubject
+
+    # rubocop:disable RSpec/NamedSubject
+    it 'returns the key from the cache if it exists with the prefix' do
+      secret_value = 'secret_value'
+
+      allow(lookup_context).to receive(:cache_has_key).and_return(false)
+
+      expect(lookup_context).to receive(:cache_has_key).with('common--profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return(true)
+      expect(lookup_context).to receive(:cached_value).with('common--profile--windows--sqlserver--sensitive-azure-sql-user-password').and_return(secret_value)
+      expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--%{trusted.hostname}--', 'common--'] }),
+lookup_context).unwrap).to eq secret_value
+    end
+    # rubocop:enable RSpec/NamedSubject
+  end
 end

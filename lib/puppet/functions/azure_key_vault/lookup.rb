@@ -11,7 +11,8 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
       Optional[service_principal_credentials] => String,
-      Optional[use_azure_arc_authentication] => Boolean
+      Optional[use_azure_arc_authentication] => Boolean,
+      Optional[prefixes] => Array[String],
     }]', :options
     param 'Puppet::LookupContext', :context
     return_type 'Variant[Sensitive, Undef]'
@@ -39,6 +40,11 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       end
     end
 
+    prefixes = options['prefixes']
+    if prefixes
+      raise ArgumentError, 'prefixes must be an array' unless prefixes.is_a?(Array)
+    end
+
     strip_from_keys = options['strip_from_keys']
     if strip_from_keys
       raise ArgumentError, 'strip_from_keys must be an array' unless strip_from_keys.is_a?(Array)
@@ -53,9 +59,17 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       end
     end
 
-    normalized_secret_name = TragicCode::Azure.normalize_object_name(secret_name, options['key_replacement_token'] || '-')
-    context.explain { "Using normalized KeyVault secret key for lookup: #{normalized_secret_name}" }
-    return Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cached_value(normalized_secret_name)) if context.cache_has_key(normalized_secret_name)
+    key_replacement_token = options['key_replacement_token'] || '-'
+    if prefixes
+      normalized_prefixed_keys = prefixes.map { |prefix| TragicCode::Azure.normalize_object_name(prefix + secret_name, key_replacement_token) }
+      normalized_prefixed_keys.each do |normalized_prefixed_key|
+        return Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cached_value(normalized_prefixed_key)) if context.cache_has_key(normalized_prefixed_key)
+      end
+    else
+      normalized_secret_name = TragicCode::Azure.normalize_object_name(secret_name, key_replacement_token)
+      context.explain { "Using normalized KeyVault secret key for lookup: #{normalized_secret_name}" }
+      return Puppet::Pops::Types::PSensitiveType::Sensitive.new(context.cached_value(normalized_secret_name)) if context.cache_has_key(normalized_secret_name)
+    end
     access_token = context.cached_value('access_token')
     if access_token.nil?
       metadata_api_version = options['metadata_api_version']
@@ -79,14 +93,28 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       end
       context.cache('access_token', access_token)
     end
+    secret_value = nil
     begin
-      secret_value = TragicCode::Azure.get_secret(
-        options['vault_name'],
-        normalized_secret_name,
-        options['vault_api_version'],
-        access_token,
-        '',
-      )
+      if normalized_prefixed_keys
+        normalized_prefixed_keys.each do |normalized_prefixed_secret_key|
+          secret_value = TragicCode::Azure.get_secret(
+            options['vault_name'],
+            normalized_prefixed_secret_key,
+            options['vault_api_version'],
+            access_token,
+            '',
+          )
+          break unless secret_value.nil?
+        end
+      else
+        secret_value = TragicCode::Azure.get_secret(
+          options['vault_name'],
+          normalized_secret_name,
+          options['vault_api_version'],
+          access_token,
+          '',
+        )
+      end
     rescue RuntimeError => e
       Puppet.warning(e.message)
       secret_value = nil

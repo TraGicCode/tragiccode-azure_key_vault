@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v3.8.0](https://github.com/TraGicCode/tragiccode-azure_key_vault/tree/v3.8.0) - 2025-04-01
+## [v4.0.0](https://github.com/TraGicCode/tragiccode-azure_key_vault/tree/v4.0.0) - 2025-10-04
+
+[Full Changelog](https://github.com/TraGicCode/tragiccode-azure_key_vault/compare/v3.8.0...v4.0.0)
+
+### Changed
+
+- (GH-150) Add ubuntu 24.04 support [#151](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/151) ([TraGicCode](https://github.com/TraGicCode))
+
+## [v3.8.0](https://github.com/TraGicCode/tragiccode-azure_key_vault/tree/v3.8.0) - 2025-03-31
 
 [Full Changelog](https://github.com/TraGicCode/tragiccode-azure_key_vault/compare/v3.7.0...v3.8.0)
 

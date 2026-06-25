@@ -444,12 +444,9 @@ sslcertificate { "Install-WebApp-Certificate" :
 
 See [REFERENCE.md](https://github.com/tragiccode/tragiccode-azure_key_vault/blob/master/REFERENCE.md)
 
-## Development and Contributing
+## Contributors
 
-We welcome contributions! To contribute:
-
-1. Fork the repository (<https://github.com/tragiccode/tragiccode-azure_key_vault/fork>)
-1. Create your feature branch (`git checkout -b my-new-feature`)
-1. Commit your changes (`git commit -am 'Add some feature'`)
-1. Push to the branch (`git push origin my-new-feature`)
-1. Create a new Pull Request
+<a href="https://github.com/TraGicCode/tragiccode-azure_key_vault/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=TraGicCode/tragiccode-azure_key_vault" />
+</a>
+<br/><br/>

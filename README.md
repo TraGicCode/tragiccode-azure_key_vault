@@ -20,6 +20,7 @@
     * [Manual Lookups](#manual-lookups)
 1. [Configuration Options](#configuration-options)
     * [API Versions](#api-versions)
+    * [cloud_type](#cloud_type)
     * [confine_to_keys](#confine_to_keys)
     * [key_replacement_token](#key_replacement_token)
     * [strip_from_keys](#strip_from_keys)
@@ -33,7 +34,8 @@
     * [Retrieving a Specific Version](#retrieving-a-specific-version)
     * [Retrieving a Certificate](#retrieving-a-certificate)
 1. [Reference](#reference)
-1. [Development and Contributing](#development-and-contributing)
+1. [Contributors](#contributors)
+1. [Contributing](#contributing)
 
 ## Description
 
@@ -214,6 +216,45 @@ The `vault_api_version` and `metadata_api_version` parameters pin the Azure APIs
 
 * **Instance Metadata Service Versions**: [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service)
 * **Vault API Versions**: Check the Azure Key Vault documentation for available versions
+
+### cloud_type
+
+The `cloud_type` parameter specifies which Azure cloud environment should be used when communicating with Azure Key Vault and Azure authentication services.
+
+By default, the module uses Azure's public cloud.
+
+Supported values:
+
+| Value | Description |
+|---------|-------------|
+| `AzureCloud` | Azure public cloud (default) |
+| `AzureUSGovernment` | Azure US Government cloud |
+| `AzureChinaCloud` | Azure China cloud |
+
+**Examples:**
+
+```yaml
+- name: 'Azure Key Vault Secrets'
+  lookup_key: azure_key_vault::lookup
+  options:
+     vault_name: "prod-key-vault"
+     vault_api_version: '2016-10-01'
+     metadata_api_version: '2018-04-02'
+     cloud_type: AzureUSGovernment # AzureCloud (Default when not specified), AzureChinaCloud, or AzureUSGovernment
+     # Other options omitted for brevity
+```
+
+When using the Puppet function directly:
+
+```puppet
+$secret = azure_key_vault::secret('production-vault', 'important-secret', {
+  metadata_api_version => '2018-04-02',
+  vault_api_version    => '2016-10-01',
+  cloud_type           => 'AzureUSGovernment',
+})
+```
+
+This setting controls the Azure Key Vault and authentication endpoints used by the module. Most users should leave this value set to the default (`AzureCloud`).
 
 ### confine_to_keys
 
@@ -450,3 +491,11 @@ See [REFERENCE.md](https://github.com/tragiccode/tragiccode-azure_key_vault/blob
   <img src="https://contrib.rocks/image?repo=TraGicCode/tragiccode-azure_key_vault" />
 </a>
 <br/><br/>
+
+## Contributing
+
+1. Fork it ( <https://github.com/tragiccode/busly-cli/fork> )
+1. Create your feature branch (`git checkout -b my-new-feature`)
+1. Commit your changes (`git commit -am 'Add some feature'`)
+1. Push to the branch (`git push origin my-new-feature`)
+1. Create a new Pull Request

@@ -21,6 +21,7 @@ The azure_key_vault::lookup function.
       vault_name => String,
       vault_api_version => String,
       Optional[metadata_api_version] => String,
+      Optional[cloud_type] => Enum["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"],
       confine_to_keys => Array[String],
       Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
@@ -48,6 +49,7 @@ Struct[{
       vault_name => String,
       vault_api_version => String,
       Optional[metadata_api_version] => String,
+      Optional[cloud_type] => Enum["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"],
       confine_to_keys => Array[String],
       Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
@@ -74,6 +76,7 @@ Retrieves secrets from Azure's Key Vault.
 #### `azure_key_vault::secret(String $vault_name, String $secret_name, Struct[{
       vault_api_version => String,
       Optional[metadata_api_version] => String,
+      Optional[cloud_type] => Enum["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"],
       Optional[service_principal_credentials] => Struct[{
         tenant_id => String,
         client_id => String,
@@ -106,6 +109,7 @@ Data type:
 Struct[{
       vault_api_version => String,
       Optional[metadata_api_version] => String,
+      Optional[cloud_type] => Enum["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"],
       Optional[service_principal_credentials] => Struct[{
         tenant_id => String,
         client_id => String,

@@ -14,6 +14,7 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
     param 'Struct[{
       vault_api_version => String,
       Optional[metadata_api_version] => String,
+      Optional[cloud_type] => Enum["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"],
       Optional[service_principal_credentials] => Struct[{
         tenant_id => String,
         client_id => String,
@@ -26,10 +27,12 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
   end
 
   def secret(cache, vault_name, secret_name, api_endpoint_hash, secret_version = '')
+    cloud_type = api_endpoint_hash['cloud_type'] || 'AzureCloud'
     Puppet.debug("vault_name: #{vault_name}")
     Puppet.debug("secret_name: #{secret_name}")
     Puppet.debug("secret_version: #{secret_version}")
     Puppet.debug("metadata_api_version: #{api_endpoint_hash['metadata_api_version']}")
+    Puppet.debug("cloud_type: #{cloud_type}")
     Puppet.debug("vault_api_version: #{api_endpoint_hash['vault_api_version']}")
     if api_endpoint_hash['service_principal_credentials']
       partial_credentials = api_endpoint_hash['service_principal_credentials'].slice('tenant_id', 'client_id')
@@ -63,11 +66,11 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
       end
 
       access_token = if service_principal_credentials
-                       TragicCode::Azure.get_access_token_service_principal(service_principal_credentials)
+                       TragicCode::Azure.get_access_token_service_principal(service_principal_credentials, cloud_type)
                      elsif use_azure_arc_authentication
-                       TragicCode::Azure.get_access_token_azure_arc(metadata_api_version)
+                       TragicCode::Azure.get_access_token_azure_arc(metadata_api_version, cloud_type)
                      else
-                       TragicCode::Azure.get_access_token(metadata_api_version)
+                       TragicCode::Azure.get_access_token(metadata_api_version, cloud_type)
                      end
       cache_hash[access_token_id] = access_token
     end
@@ -78,6 +81,7 @@ Puppet::Functions.create_function(:'azure_key_vault::secret', Puppet::Functions:
       api_endpoint_hash['vault_api_version'],
       cache_hash[access_token_id],
       secret_version,
+      cloud_type,
     )
 
     raise Puppet::Error, "The secret named #{secret_name} could not be found in a vault named #{vault_name}" if secret_value.nil?

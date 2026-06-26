@@ -51,9 +51,9 @@ describe 'azure_key_vault::lookup' do
     secret_value = 'secret_value'
 
     expect(lookup_context).to receive(:cached_value).with('access_token').and_return(nil)
-    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_access_token).with(options['metadata_api_version'], 'AzureCloud').and_return(access_token_value)
     expect(lookup_context).to receive(:cache).with('access_token', access_token_value).ordered
-    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+    expect(TragicCode::Azure).to receive(:get_secret).with(options['vault_name'], anything, options['vault_api_version'], access_token_value, '', 'AzureCloud').and_return(secret_value)
     expect(lookup_context).to receive(:cache).and_return(secret_value).ordered
 
     expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context).unwrap).to eq secret_value
@@ -73,8 +73,8 @@ describe 'azure_key_vault::lookup' do
     access_token_value = 'access_value'
     secret_value = 'secret_value'
     expect(TragicCode::Azure).to receive(:normalize_object_name).with(secret_name, '-')
-    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+    expect(TragicCode::Azure).to receive(:get_access_token).with(options['metadata_api_version'], 'AzureCloud').and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).with(options['vault_name'], anything, options['vault_api_version'], access_token_value, '', 'AzureCloud').and_return(secret_value)
 
     expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options, lookup_context).unwrap).to eq secret_value
   end
@@ -118,12 +118,18 @@ describe 'azure_key_vault::lookup' do
     ).and_raise_error(ArgumentError, %r{creating regexp failed with}i)
   end
 
+  it 'errors when `cloud_type` is not a valid option' do
+    is_expected.to run.with_params(
+      'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'cloud_type' => 'invalid' }), lookup_context
+    ).and_raise_error(ArgumentError, %r{'cloud_type' expects a match for Enum\['AzureChinaCloud', 'AzureCloud', 'AzureUSGovernment'\], got 'invalid'}i)
+  end
+
   # rubocop:disable RSpec/NamedSubject
   it 'returns the key if regex matches confine_to_keys' do
     access_token_value = 'access_value'
     secret_value = 'secret_value'
-    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+    expect(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).with(any_args, 'AzureCloud').and_return(secret_value)
 
     expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context).unwrap)
       .to eq secret_value
@@ -135,8 +141,8 @@ describe 'azure_key_vault::lookup' do
     secret_value = 'secret_value'
 
     expect(lookup_context).to receive(:not_found)
-    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+    expect(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).with(any_args, 'AzureCloud').and_return(secret_value)
 
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_sql_user_password', options.merge({ 'confine_to_keys' => ['^sensitive_azure.*$'] }), lookup_context
@@ -171,6 +177,7 @@ describe 'azure_key_vault::lookup' do
           options['vault_api_version'],
           access_token_value,
           '',
+          'AzureCloud',
         ).and_return(test_case[:secret_value])
 
         # rubocop:disable RSpec/NamedSubject
@@ -191,8 +198,8 @@ describe 'azure_key_vault::lookup' do
     access_token_value = 'access_value'
 
     expect(lookup_context).to receive(:not_found)
-    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-    expect(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+    expect(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).with(any_args, 'AzureCloud').and_return(nil)
 
     is_expected.to run.with_params(
       'profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context
@@ -203,8 +210,8 @@ describe 'azure_key_vault::lookup' do
   it 'returns the secret wrapped in the sensitive data type' do
     access_token_value = 'access_value'
     secret_value = 'secret_value'
-    expect(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-    expect(TragicCode::Azure).to receive(:get_secret).and_return(secret_value)
+    expect(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
+    expect(TragicCode::Azure).to receive(:get_secret).with(any_args, 'AzureCloud').and_return(secret_value)
 
     expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'confine_to_keys' => ['^.*sensitive_azure.*'] }), lookup_context))
       .to be_an_instance_of(Puppet::Pops::Types::PSensitiveType::Sensitive)
@@ -216,8 +223,8 @@ describe 'azure_key_vault::lookup' do
       # Arrange
       access_token_value = 'access_value'
       expect(lookup_context).to receive(:not_found)
-      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-      allow(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+      allow(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
+      allow(TragicCode::Azure).to receive(:get_secret).with(any_args, 'AzureCloud').and_return(nil)
       # This works but not sure if it's a good practice
       # expect(TragicCode::Azure).to receive(:get_secret).exactly(2).times.and_return(nil)
 
@@ -231,14 +238,15 @@ describe 'azure_key_vault::lookup' do
     it 'returns the key if found using the last prefix' do
       access_token_value = 'access_value'
       secret_value = 'secret_value'
-      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-      allow(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+      allow(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
+      allow(TragicCode::Azure).to receive(:get_secret).with(any_args, 'AzureCloud').and_return(nil)
       allow(TragicCode::Azure).to receive(:get_secret).with(
           options['vault_name'],
           'common--profile--windows--sqlserver--sensitive-azure-sql-user-password',
           options['vault_api_version'],
           access_token_value,
           '',
+          'AzureCloud',
         ).and_return('secret_value')
 
       expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--%{trusted.hostname}--', 'common--'] }), lookup_context).unwrap)
@@ -250,14 +258,15 @@ describe 'azure_key_vault::lookup' do
     it 'returns the key if found using the first prefix' do
       access_token_value = 'access_value'
       secret_value = 'secret_value'
-      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
-      allow(TragicCode::Azure).to receive(:get_secret).and_return(nil)
+      allow(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
+      allow(TragicCode::Azure).to receive(:get_secret).with(any_args, 'AzureCloud').and_return(nil)
       allow(TragicCode::Azure).to receive(:get_secret).with(
           options['vault_name'],
           'nodes--WIN-P-01-domain-com--profile--windows--sqlserver--sensitive-azure-sql-user-password',
           options['vault_api_version'],
           access_token_value,
           '',
+          'AzureCloud',
         ).and_return('secret_value')
 
       expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--WIN_P-01.domain.com--', 'common--'] }), lookup_context).unwrap)
@@ -271,13 +280,14 @@ describe 'azure_key_vault::lookup' do
     it 'normalizes prefixes to prevent issues for users' do
       access_token_value = 'access_value'
       secret_value = 'secret_value'
-      allow(TragicCode::Azure).to receive(:get_access_token).and_return(access_token_value)
+      allow(TragicCode::Azure).to receive(:get_access_token).with(any_args, 'AzureCloud').and_return(access_token_value)
       expect(TragicCode::Azure).to receive(:get_secret).with(
           options['vault_name'],
           'nodes--WIN-P-01-domain-com--profile--windows--sqlserver--sensitive-azure-sql-user-password',
           options['vault_api_version'],
           access_token_value,
           '',
+          'AzureCloud',
         ).and_return('secret_value')
 
       expect(subject.execute('profile::windows::sqlserver::sensitive_azure_sql_user_password', options.merge({ 'prefixes' => ['nodes--WIN_P-01.domain.com--'] }), lookup_context).unwrap)

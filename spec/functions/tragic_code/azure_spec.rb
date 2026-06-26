@@ -15,8 +15,21 @@ describe TragicCode::Azure do
   context '.get_access_token' do
     it 'returns a bearer token' do
       stub_request(:get, %r{169.254.169.254})
+        .with(query: hash_including('resource' => 'https://vault.azure.net'))
         .to_return(body: '{"access_token": "token"}', status: 200)
       expect(described_class.get_access_token('api')).to eq('token')
+    end
+    it 'returns a bearer token for AzureUSGovernment' do
+      stub_request(:get, %r{169.254.169.254})
+        .with(query: hash_including('resource' => 'https://vault.usgovcloudapi.net'))
+        .to_return(body: '{"access_token": "token"}', status: 200)
+      expect(described_class.get_access_token('api', 'AzureUSGovernment')).to eq('token')
+    end
+    it 'returns a bearer token for AzureChinaCloud' do
+      stub_request(:get, %r{169.254.169.254})
+        .with(query: hash_including('resource' => 'https://vault.azure.cn'))
+        .to_return(body: '{"access_token": "token"}', status: 200)
+      expect(described_class.get_access_token('api', 'AzureChinaCloud')).to eq('token')
     end
     it 'errors when the response is not 2xx' do
       stub_request(:get, %r{169.254.169.254})
@@ -30,6 +43,7 @@ describe TragicCode::Azure do
       allow(File).to receive(:read).and_return('magical-token-from-file')
 
       stub_request(:get, %r{127.0.0.1})
+        .with(query: hash_including('resource' => 'https://vault.azure.net'))
         .to_return(
           body: '{"access_token": "token"}',
           status: 401,
@@ -37,10 +51,28 @@ describe TragicCode::Azure do
         )
 
       stub_request(:get, %r{127.0.0.1})
-        .with(headers: { 'Authorization' => 'Basic magical-token-from-file' })
+        .with(headers: { 'Authorization' => 'Basic magical-token-from-file' }, query: hash_including('resource' => 'https://vault.azure.net'))
         .to_return(body: '{"access_token": "token"}', status: 200)
 
       expect(described_class.get_access_token_azure_arc('api')).to eq('token')
+    end
+
+    it 'returns a bearer token for AzureUSGovernment' do
+      allow(File).to receive(:read).and_return('magical-token-from-file')
+
+      stub_request(:get, %r{127.0.0.1})
+        .with(query: hash_including('resource' => 'https://vault.usgovcloudapi.net'))
+        .to_return(
+          body: '{"access_token": "token"}',
+          status: 401,
+          headers: { 'Www-Authenticate' => 'Basic realm=C:\\ProgramData\\AzureConnectedMachineAgent\\Tokens\\f1da0584-97f4-42fd-a671-879ad3de86fa.key' },
+        )
+
+      stub_request(:get, %r{127.0.0.1})
+        .with(headers: { 'Authorization' => 'Basic magical-token-from-file' }, query: hash_including('resource' => 'https://vault.usgovcloudapi.net'))
+        .to_return(body: '{"access_token": "token"}', status: 200)
+
+      expect(described_class.get_access_token_azure_arc('api', 'AzureUSGovernment')).to eq('token')
     end
 
     it 'throws error with response body when response is not 401 (unauthorized) when attempting to generate secret file' do
@@ -74,8 +106,21 @@ describe TragicCode::Azure do
 
     it 'returns a bearer token' do
       stub_request(:post, %r{login.microsoftonline.com})
+        .with(body: hash_including('scope' => 'https://vault.azure.net/.default'))
         .to_return(body: '{"access_token": "token"}', status: 200)
       expect(described_class.get_access_token_service_principal(credentials)).to eq('token')
+    end
+    it 'returns a bearer token for AzureUSGovernment' do
+      stub_request(:post, %r{login.microsoftonline.us})
+        .with(body: hash_including('scope' => 'https://vault.usgovcloudapi.net/.default'))
+        .to_return(body: '{"access_token": "token"}', status: 200)
+      expect(described_class.get_access_token_service_principal(credentials, 'AzureUSGovernment')).to eq('token')
+    end
+    it 'returns a bearer token for AzureChinaCloud' do
+      stub_request(:post, %r{login.chinacloudapi.cn})
+        .with(body: hash_including('scope' => 'https://vault.azure.cn/.default'))
+        .to_return(body: '{"access_token": "token"}', status: 200)
+      expect(described_class.get_access_token_service_principal(credentials, 'AzureChinaCloud')).to eq('token')
     end
     it 'errors when the response is not 2xx' do
       stub_request(:post, %r{login.microsoftonline.com})
@@ -87,9 +132,21 @@ describe TragicCode::Azure do
   context '.get_secret' do
     it 'returns a secret' do
       vault_name = 'vault'
-      stub_request(:get, %r{vault}i)
+      stub_request(:get, %r{vault.vault.azure.net}i)
         .to_return(body: '{"value": "secret"}', status: 200)
       expect(described_class.get_secret(vault_name, 'secret_name', 'api', 'token', '')).to eq('secret')
+    end
+    it 'returns a secret for AzureUSGovernment' do
+      vault_name = 'vault'
+      stub_request(:get, %r{vault.vault.usgovcloudapi.net}i)
+        .to_return(body: '{"value": "secret"}', status: 200)
+      expect(described_class.get_secret(vault_name, 'secret_name', 'api', 'token', '', 'AzureUSGovernment')).to eq('secret')
+    end
+    it 'returns a secret for AzureChinaCloud' do
+      vault_name = 'vault'
+      stub_request(:get, %r{vault.vault.azure.cn}i)
+        .to_return(body: '{"value": "secret"}', status: 200)
+      expect(described_class.get_secret(vault_name, 'secret_name', 'api', 'token', '', 'AzureChinaCloud')).to eq('secret')
     end
     it 'errors when the response is not 2xx' do
       vault_name = 'vault'

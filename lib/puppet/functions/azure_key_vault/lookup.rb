@@ -7,6 +7,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
       vault_name => String,
       vault_api_version => String,
       Optional[metadata_api_version] => String,
+      Optional[cloud_type] => Enum["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"],
       confine_to_keys => Array[String],
       Optional[strip_from_keys] => Array[String],
       Optional[key_replacement_token] => String,
@@ -21,6 +22,8 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
   def lookup_key(secret_name, options, context)
     # This is a reserved key name in hiera
     return context.not_found if secret_name == 'lookup_options'
+
+    cloud_type = options['cloud_type'] || 'AzureCloud'
 
     confine_keys = options['confine_to_keys']
     if confine_keys
@@ -85,11 +88,11 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
 
       if service_principal_credentials
         credentials = YAML.load_file(service_principal_credentials)
-        access_token = TragicCode::Azure.get_access_token_service_principal(credentials)
+        access_token = TragicCode::Azure.get_access_token_service_principal(credentials, cloud_type)
       elsif use_azure_arc_authentication
-        access_token = TragicCode::Azure.get_access_token_azure_arc(metadata_api_version)
+        access_token = TragicCode::Azure.get_access_token_azure_arc(metadata_api_version, cloud_type)
       else
-        access_token = TragicCode::Azure.get_access_token(metadata_api_version)
+        access_token = TragicCode::Azure.get_access_token(metadata_api_version, cloud_type)
       end
       context.cache('access_token', access_token)
     end
@@ -103,6 +106,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
             options['vault_api_version'],
             access_token,
             '',
+            cloud_type,
           )
           break unless secret_value.nil?
         end
@@ -113,6 +117,7 @@ Puppet::Functions.create_function(:'azure_key_vault::lookup') do
           options['vault_api_version'],
           access_token,
           '',
+          cloud_type,
         )
       end
     rescue RuntimeError => e

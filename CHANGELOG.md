@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v4.1.0](https://github.com/TraGicCode/tragiccode-azure_key_vault/tree/v4.1.0) - 2026-06-26
+
+[Full Changelog](https://github.com/TraGicCode/tragiccode-azure_key_vault/compare/v4.0.0...v4.1.0)
+
+### Added
+
+- (GH-158) Add soverign cloud support via new cloud_type param [#160](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/160) ([TraGicCode](https://github.com/TraGicCode))
+
+### Other
+
+- Restructure and organize README.md - Fixes #144 [#155](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/155) ([raman1236](https://github.com/raman1236))
+
 ## [v4.0.0](https://github.com/TraGicCode/tragiccode-azure_key_vault/tree/v4.0.0) - 2025-10-04
 
 [Full Changelog](https://github.com/TraGicCode/tragiccode-azure_key_vault/compare/v3.8.0...v4.0.0)

@@ -42,7 +42,7 @@ describe TragicCode::Azure do
     it 'returns a bearer token' do
       allow(File).to receive(:read).and_return('magical-token-from-file')
 
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .with(query: hash_including('resource' => 'https://vault.azure.net'))
         .to_return(
           body: '{"access_token": "token"}',
@@ -50,7 +50,7 @@ describe TragicCode::Azure do
           headers: { 'Www-Authenticate' => 'Basic realm=C:\\ProgramData\\AzureConnectedMachineAgent\\Tokens\\f1da0584-97f4-42fd-a671-879ad3de86fa.key' },
         )
 
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .with(headers: { 'Authorization' => 'Basic magical-token-from-file' }, query: hash_including('resource' => 'https://vault.azure.net'))
         .to_return(body: '{"access_token": "token"}', status: 200)
 
@@ -60,7 +60,7 @@ describe TragicCode::Azure do
     it 'returns a bearer token for AzureUSGovernment' do
       allow(File).to receive(:read).and_return('magical-token-from-file')
 
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .with(query: hash_including('resource' => 'https://vault.usgovcloudapi.net'))
         .to_return(
           body: '{"access_token": "token"}',
@@ -68,7 +68,7 @@ describe TragicCode::Azure do
           headers: { 'Www-Authenticate' => 'Basic realm=C:\\ProgramData\\AzureConnectedMachineAgent\\Tokens\\f1da0584-97f4-42fd-a671-879ad3de86fa.key' },
         )
 
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .with(headers: { 'Authorization' => 'Basic magical-token-from-file' }, query: hash_including('resource' => 'https://vault.usgovcloudapi.net'))
         .to_return(body: '{"access_token": "token"}', status: 200)
 
@@ -76,13 +76,13 @@ describe TragicCode::Azure do
     end
 
     it 'throws error with response body when response is not 401 (unauthorized) when attempting to generate secret file' do
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .to_return(body: 'some_error', status: 200)
       expect { described_class.get_access_token_azure_arc('api') }.to raise_error('some_error')
     end
 
     it 'throws error when the 401 (unauthorized) response is missing the Www-Authenticate header' do
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .to_return(body: 'some_error', status: 401)
       expect { described_class.get_access_token_azure_arc('api') }.to raise_error('Response header Www-Authenticate is missing')
     end
@@ -90,10 +90,10 @@ describe TragicCode::Azure do
     it 'throws error with response body when response is not 2xx when getting the auth token' do
       allow(File).to receive(:read).and_return('magical-token-from-file')
       # rubocop:disable Layout/LineLength
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .to_return(body: '{"access_token": "token"}', status: 401, headers: { 'Www-Authenticate' => 'Basic realm=C:\\ProgramData\\AzureConnectedMachineAgent\\Tokens\\f1da0584-97f4-42fd-a671-879ad3de86fa.key' })
       # rubocop:enable Layout/LineLength
-      stub_request(:get, %r{127.0.0.1})
+      stub_request(:get, %r{127.0.0.1:40342})
         .with(headers: { 'Authorization' => 'Basic magical-token-from-file' })
         .to_return(body: 'some_error', status: 400)
 

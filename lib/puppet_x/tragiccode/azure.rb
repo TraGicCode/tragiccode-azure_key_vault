@@ -5,7 +5,7 @@ require 'uri'
 module TragicCode
   # Azure API functions
   class Azure
-    @azure_arc_instance_metadata_endpoint_ip = '127.0.0.1'.freeze
+    @azure_arc_instance_metadata_endpoint_ip_and_port = '127.0.0.1:40342'.freeze
 
     def self.cloud_environments
       {
@@ -31,7 +31,7 @@ module TragicCode
     def self.get_access_token_azure_arc(api_version, cloud_type = 'AzureCloud')
       # Generate File and Read Challenge Token
       vault_resource = "https://#{cloud_environments.fetch(cloud_type, cloud_environments['AzureCloud'])['vault_dns_suffix']}"
-      uri = URI("http://#{@azure_arc_instance_metadata_endpoint_ip}/metadata/identity/oauth2/token?api-version=#{api_version}&resource=#{URI.encode_www_form_component(vault_resource)}")
+      uri = URI("http://#{@azure_arc_instance_metadata_endpoint_ip_and_port}/metadata/identity/oauth2/token?api-version=#{api_version}&resource=#{URI.encode_www_form_component(vault_resource)}")
       req = Net::HTTP::Get.new(uri.request_uri)
       req['Metadata'] = 'true'
       res = Net::HTTP.start(uri.hostname, uri.port) do |http|
@@ -46,7 +46,7 @@ module TragicCode
       challenge_token = File.read(challenge_token_file_path)
 
       # Get Access Token using challenge token
-      internal_get_access_token(api_version, @azure_arc_instance_metadata_endpoint_ip, { 'Authorization' => "Basic #{challenge_token}" }, cloud_type)
+      internal_get_access_token(api_version, @azure_arc_instance_metadata_endpoint_ip_and_port, { 'Authorization' => "Basic #{challenge_token}" }, cloud_type)
     end
 
     def self.get_access_token(api_version, cloud_type = 'AzureCloud')

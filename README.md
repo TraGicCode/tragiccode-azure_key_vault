@@ -10,29 +10,30 @@
 1. [Description](#description)
 1. [Requirements](#requirements)
 1. [Authentication Methods](#authentication-methods)
-    * [Managed Service Identity (MSI)](#managed-service-identity-msi)
-    * [Managed Identity for Azure Arc-enabled servers](#managed-identity-for-azure-arc-enabled-servers)
-    * [Service Principal Credentials](#service-principal-credentials)
-    * [Which Authentication Method Should I Use?](#which-authentication-method-should-i-use)
+   - [Managed Service Identity (MSI)](#managed-service-identity-msi)
+   - [Managed Identity for Azure Arc-enabled servers](#managed-identity-for-azure-arc-enabled-servers)
+   - [Service Principal Credentials](#service-principal-credentials)
+   - [Which Authentication Method Should I Use?](#which-authentication-method-should-i-use)
 1. [Usage](#usage)
-    * [Puppet Function](#puppet-function)
-    * [Hiera Backend](#hiera-backend)
-    * [Manual Lookups](#manual-lookups)
+   - [Puppet Function](#puppet-function)
+   - [Deferred Functions (Agent-Side Lookups)](#deferred-functions-agent-side-lookups)
+   - [Hiera Backend](#hiera-backend)
+   - [Manual Lookups](#manual-lookups)
 1. [Configuration Options](#configuration-options)
-    * [API Versions](#api-versions)
-    * [cloud_type](#cloud_type)
-    * [confine_to_keys](#confine_to_keys)
-    * [key_replacement_token](#key_replacement_token)
-    * [strip_from_keys](#strip_from_keys)
-    * [prefixes](#prefixes)
-    * [Using Facts](#using-facts)
+   - [API Versions](#api-versions)
+   - [cloud_type](#cloud_type)
+   - [confine_to_keys](#confine_to_keys)
+   - [key_replacement_token](#key_replacement_token)
+   - [strip_from_keys](#strip_from_keys)
+   - [prefixes](#prefixes)
+   - [Using Facts](#using-facts)
 1. [Security](#security)
-    * [How It's Secure by Default](#how-its-secure-by-default)
-    * [Working with Sensitive Data](#working-with-sensitive-data)
+   - [How It's Secure by Default](#how-its-secure-by-default)
+   - [Working with Sensitive Data](#working-with-sensitive-data)
 1. [Examples](#examples)
-    * [Embedding a Secret in a File](#embedding-a-secret-in-a-file)
-    * [Retrieving a Specific Version](#retrieving-a-specific-version)
-    * [Retrieving a Certificate](#retrieving-a-certificate)
+   - [Embedding a Secret in a File](#embedding-a-secret-in-a-file)
+   - [Retrieving a Specific Version](#retrieving-a-specific-version)
+   - [Retrieving a Certificate](#retrieving-a-certificate)
 1. [Reference](#reference)
 1. [Contributors](#contributors)
 1. [Contributing](#contributing)
@@ -43,9 +44,9 @@ Secure secrets management is essential for protecting data in the cloud. Azure K
 
 ## Requirements
 
-* **Puppet Agent**: Version 6.0.0 or later
-* **Azure Subscription**: One or more Key Vaults created and populated with secrets
-* **Authentication**: One of the authentication methods described below
+- **Puppet Agent**: Version 6.0.0 or later
+- **Azure Subscription**: One or more Key Vaults created and populated with secrets
+- **Authentication**: One of the authentication methods described below
 
 ## Authentication Methods
 
@@ -125,6 +126,37 @@ $important_secret = azure_key_vault::secret('production-vault', 'important-secre
 
 The `client_secret` must be of type `Sensitive` to prevent accidental leakage in logs and reports.
 
+### Deferred Functions (Agent-Side Lookups)
+
+By default, `azure_key_vault::secret` runs on the **Puppet Server** during catalog compilation, which means the secret value is embedded in the compiled catalog and the Puppet Server itself needs network access and permissions to reach Key Vault.
+
+Using Puppet's [`Deferred` type](https://www.puppet.com/docs/puppet/latest/lang_write_functions_in_puppet.html#lang_deferred_functions), you can instead defer the lookup so it happens on the **agent**, when the catalog is _applied_ rather than compiled. This has a few advantages:
+
+- The secret is never embedded in the compiled catalog, so it isn't stored in PuppetDB, reports, or catalog caches.
+- The Puppet Server does not need any permissions or network path to Key Vault — only the agent does.
+- Each agent can authenticate independently (for example, via its own MSI identity), rather than relying on the compiler's credentials for every node.
+
+#### Deferred Example: Using MSI
+
+[#deferred-example-using-msi](#deferred-example-using-msi)
+
+```puppet
+$important_secret = Deferred('azure_key_vault::secret', [
+  'production-vault',
+  'important-secret',
+  {
+    vault_api_version    => '2016-10-01',
+    metadata_api_version => '2018-04-02',
+  },
+])
+
+notify { 'secret':
+  message => $important_secret,
+}
+```
+
+The arguments passed to `Deferred` are identical to the arguments you'd pass to `azure_key_vault::secret` directly — they're just evaluated on the agent instead of the compiler.
+
 ### Hiera Backend
 
 The module provides a Hiera 5 backend that integrates with Puppet's automatic parameter lookup (APL).
@@ -134,57 +166,57 @@ The module provides a Hiera 5 backend that integrates with Puppet's automatic pa
 Add this to your `hiera.yaml`:
 
 ```yaml
-- name: 'Azure Key Vault Secrets'
+- name: "Azure Key Vault Secrets"
   lookup_key: azure_key_vault::lookup
   options:
     vault_name: production-vault
-    vault_api_version: '2016-10-01'
-    metadata_api_version: '2018-04-02'
-    key_replacement_token: '-'
+    vault_api_version: "2016-10-01"
+    metadata_api_version: "2018-04-02"
+    key_replacement_token: "-"
     confine_to_keys:
-      - '^azure_.*'
-      - '^.*_password$'
-      - '^password.*'
+      - "^azure_.*"
+      - "^.*_password$"
+      - "^password.*"
 ```
 
 #### Hiera Example: Using Azure Arc
 
 ```yaml
-- name: 'Azure Key Vault Secrets'
+- name: "Azure Key Vault Secrets"
   lookup_key: azure_key_vault::lookup
   options:
     vault_name: production-vault
-    vault_api_version: '2016-10-01'
-    metadata_api_version: '2018-04-02'
+    vault_api_version: "2016-10-01"
+    metadata_api_version: "2018-04-02"
     use_azure_arc_authentication: true
-    key_replacement_token: '-'
+    key_replacement_token: "-"
     confine_to_keys:
-      - '^azure_.*'
-      - '^.*_password$'
-      - '^password.*'
+      - "^azure_.*"
+      - "^.*_password$"
+      - "^password.*"
 ```
 
 #### Hiera Example: Using Service Principal
 
 ```yaml
-- name: 'Azure Key Vault Secrets'
+- name: "Azure Key Vault Secrets"
   lookup_key: azure_key_vault::lookup
   options:
     vault_name: production-vault
-    vault_api_version: '2016-10-01'
-    service_principal_credentials: '/etc/puppetlabs/puppet/azure_key_vault_credentials.yaml'
-    key_replacement_token: '-'
+    vault_api_version: "2016-10-01"
+    service_principal_credentials: "/etc/puppetlabs/puppet/azure_key_vault_credentials.yaml"
+    key_replacement_token: "-"
     confine_to_keys:
-      - '^azure_.*'
-      - '^.*_password$'
-      - '^password.*'
+      - "^azure_.*"
+      - "^.*_password$"
+      - "^password.*"
 ```
 
 The credentials file should be in YAML format:
 
 ```yaml
-tenant_id: '00000000-0000-1234-1234-000000000000'
-client_id: '00000000-0000-1234-1234-000000000000'
+tenant_id: "00000000-0000-1234-1234-000000000000"
+client_id: "00000000-0000-1234-1234-000000000000"
 client_secret: some-secret
 ```
 
@@ -214,8 +246,8 @@ some_class::password: "%{alias('important-secret')}"
 
 The `vault_api_version` and `metadata_api_version` parameters pin the Azure APIs to specific versions, giving you control over when your Puppet code uses different API versions.
 
-* **Instance Metadata Service Versions**: [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service)
-* **Vault API Versions**: Check the Azure Key Vault documentation for available versions
+- **Instance Metadata Service Versions**: [Azure documentation](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service)
+- **Vault API Versions**: Check the Azure Key Vault documentation for available versions
 
 ### cloud_type
 
@@ -225,23 +257,23 @@ By default, the module uses Azure's public cloud.
 
 Supported values:
 
-| Value | Description |
-|---------|-------------|
-| `AzureCloud` | Azure public cloud (default) |
-| `AzureUSGovernment` | Azure US Government cloud |
-| `AzureChinaCloud` | Azure China cloud |
+| Value               | Description                  |
+| ------------------- | ---------------------------- |
+| `AzureCloud`        | Azure public cloud (default) |
+| `AzureUSGovernment` | Azure US Government cloud    |
+| `AzureChinaCloud`   | Azure China cloud            |
 
 **Examples:**
 
 ```yaml
-- name: 'Azure Key Vault Secrets'
+- name: "Azure Key Vault Secrets"
   lookup_key: azure_key_vault::lookup
   options:
-     vault_name: "prod-key-vault"
-     vault_api_version: '2016-10-01'
-     metadata_api_version: '2018-04-02'
-     cloud_type: AzureUSGovernment # AzureCloud (Default when not specified), AzureChinaCloud, or AzureUSGovernment
-     # Other options omitted for brevity
+    vault_name: "prod-key-vault"
+    vault_api_version: "2016-10-01"
+    metadata_api_version: "2018-04-02"
+    cloud_type: AzureUSGovernment # AzureCloud (Default when not specified), AzureChinaCloud, or AzureUSGovernment
+    # Other options omitted for brevity
 ```
 
 When using the Puppet function directly:
@@ -266,9 +298,9 @@ Hiera will only query Key Vault when the lookup key matches at least one of the 
 
 ```yaml
 confine_to_keys:
-  - '^azure_.*'
-  - '^.*_password$'
-  - '^password.*'
+  - "^azure_.*"
+  - "^.*_password$"
+  - "^password.*"
 ```
 
 **Best Practice:** Establish naming conventions for your secrets to minimize the number of regular expressions needed.
@@ -294,17 +326,17 @@ The `strip_from_keys` option removes specified patterns from secret names before
 **Example:**
 
 ```yaml
-- name: 'Azure Key Vault Secrets'
+- name: "Azure Key Vault Secrets"
   lookup_key: azure_key_vault::lookup
   options:
     vault_name: "prod-key-vault"
-    vault_api_version: '2016-10-01'
-    metadata_api_version: '2018-04-02'
-    key_replacement_token: '-'
+    vault_api_version: "2016-10-01"
+    metadata_api_version: "2018-04-02"
+    key_replacement_token: "-"
     strip_from_keys:
-      - 'azure_'
+      - "azure_"
     confine_to_keys:
-      - '^azure_.*'
+      - "^azure_.*"
 ```
 
 With this configuration, a lookup for `azure_sql_user_password` searches for `sql-user-password` in Key Vault.
@@ -313,7 +345,7 @@ With this configuration, a lookup for `azure_sql_user_password` searches for `sq
 
 ```yaml
 strip_from_keys:
-  - '^profile::.*::'
+  - "^profile::.*::"
 ```
 
 A lookup for `profile::windows::sqlserver::azure_sql_user_password` searches for `azure_sql_user_password`.
@@ -325,18 +357,18 @@ The `prefixes` option creates a hierarchy within Key Vault, similar to the YAML 
 **Example:**
 
 ```yaml
-- name: 'Azure Key Vault Secrets'
+- name: "Azure Key Vault Secrets"
   lookup_key: azure_key_vault::lookup
   options:
     vault_name: secrets-vault
-    vault_api_version: '2016-10-01'
-    metadata_api_version: '2018-04-02'
-    key_replacement_token: '-'
+    vault_api_version: "2016-10-01"
+    metadata_api_version: "2018-04-02"
+    key_replacement_token: "-"
     prefixes:
       - nodes--%{trusted.hostname}--
       - common--
     confine_to_keys:
-      - '^azure_.*'
+      - "^azure_.*"
 ```
 
 For a node with `trusted.hostname` of `WIN-SQL01.domain.com`, a lookup for `azure_sql_user_password` checks:
@@ -353,17 +385,17 @@ You can use facts to specify different vaults for different node groups. Use tru
 **Example:**
 
 ```yaml
-- name: 'Azure Key Vault Secrets'
+- name: "Azure Key Vault Secrets"
   lookup_key: azure_key_vault::lookup
   options:
     vault_name: "%{trusted.extensions.pp_environment}"
-    vault_api_version: '2016-10-01'
-    metadata_api_version: '2018-04-02'
-    key_replacement_token: '-'
+    vault_api_version: "2016-10-01"
+    metadata_api_version: "2018-04-02"
+    key_replacement_token: "-"
     confine_to_keys:
-      - '^azure_.*'
-      - '^.*_password$'
-      - '^password.*'
+      - "^azure_.*"
+      - "^.*_password$"
+      - "^password.*"
 ```
 
 You can also use [custom trusted facts in certificate requests](https://puppet.com/docs/puppet/latest/ssl_attributes_extensions.html).

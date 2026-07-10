@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v4.1.2](https://github.com/TraGicCode/tragiccode-azure_key_vault/tree/v4.1.2) - 2026-07-10
+
+[Full Changelog](https://github.com/TraGicCode/tragiccode-azure_key_vault/compare/v4.1.1...v4.1.2)
+
+### Added
+
+- (GH-19) Document using puppet 6 deferred function [#166](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/166) ([TraGicCode](https://github.com/TraGicCode))
+
+### Fixed
+
+- Fix readme mistake [#168](https://github.com/TraGicCode/tragiccode-azure_key_vault/pull/168) ([TraGicCode](https://github.com/TraGicCode))
+
 ## [v4.1.1](https://github.com/TraGicCode/tragiccode-azure_key_vault/tree/v4.1.1) - 2026-07-08
 
 [Full Changelog](https://github.com/TraGicCode/tragiccode-azure_key_vault/compare/v4.1.0...v4.1.1)

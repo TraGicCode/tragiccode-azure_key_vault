@@ -130,15 +130,13 @@ The `client_secret` must be of type `Sensitive` to prevent accidental leakage in
 
 By default, `azure_key_vault::secret` runs on the **Puppet Server** during catalog compilation, which means the secret value is embedded in the compiled catalog and the Puppet Server itself needs network access and permissions to reach Key Vault.
 
-Using Puppet's [`Deferred` type](https://www.puppet.com/docs/puppet/latest/lang_write_functions_in_puppet.html#lang_deferred_functions), you can instead defer the lookup so it happens on the **agent**, when the catalog is _applied_ rather than compiled. This has a few advantages:
+Using Puppet's [`Deferred` type](https://help.puppet.com/core/current/Content/PuppetCore/deferring_functions.htm), you can instead defer the lookup so it happens on the **agent**, when the catalog is _applied_ rather than compiled. This has a few advantages:
 
 - The secret is never embedded in the compiled catalog, so it isn't stored in PuppetDB, reports, or catalog caches.
 - The Puppet Server does not need any permissions or network path to Key Vault — only the agent does.
 - Each agent can authenticate independently (for example, via its own MSI identity), rather than relying on the compiler's credentials for every node.
 
 #### Deferred Example: Using MSI
-
-[#deferred-example-using-msi](#deferred-example-using-msi)
 
 ```puppet
 $important_secret = Deferred('azure_key_vault::secret', [
